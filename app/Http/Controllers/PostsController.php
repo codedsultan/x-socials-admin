@@ -10,7 +10,9 @@ use App\Services\XSocialsApiService;
 
 class PostsController extends Controller
 {
-    public function __construct(private readonly XSocialsApiService $api) {}
+    public function __construct(private readonly XSocialsApiService $api)
+    {
+    }
 
     public function index(Request $request): Response
     {
@@ -43,6 +45,18 @@ class PostsController extends Controller
     public function destroy(string $id): RedirectResponse
     {
         $deleted = $this->api->deletePost($id);
+
+        if ($deleted) {
+            /** @var \App\Models\User $admin */
+            $admin = \Illuminate\Support\Facades\Auth::guard('admin')->user();
+            \App\Models\AdminActionLog::record(
+                actor:      $admin,
+                action:     'delete_post',
+                targetType: 'post',
+                targetId:   $id,
+                ip:         request()->ip(),
+            );
+        }
 
         return $deleted
             ? redirect()->route('posts.index')->with('success', 'Post deleted.')

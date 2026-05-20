@@ -11,13 +11,16 @@ use Illuminate\Support\Facades\Schema;
  * Records timing, how many comments were scanned, and summary counts.
  * Used for the admin dashboard "last scan" widget.
  */
-return new class extends Migration
-{
+return new class () extends Migration {
     public function up(): void
     {
         Schema::create('scan_runs', function (Blueprint $table) {
             $table->id();
-            $table->enum('status', ['running', 'completed', 'failed'])->default('running')->index();
+            // $table->enum('status', ['running', 'completed', 'failed'])->default('running')->index();
+
+            // Values: 'running', 'completed', 'failed'
+            $table->string('status', 20)->default('running');
+            $table->index('status');
             $table->unsignedInteger('posts_scanned')->default(0);
             $table->unsignedInteger('comments_scanned')->default(0);
             $table->unsignedInteger('flagged')->default(0);         // 'remove' verdicts

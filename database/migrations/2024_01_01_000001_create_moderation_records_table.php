@@ -14,8 +14,7 @@ use Illuminate\Support\Facades\Schema;
  * comment_id / post_id reference MongoDB ObjectIds in the Node.js app.
  * We store them as VARCHAR(36) — they are opaque references, never joined.
  */
-return new class extends Migration
-{
+return new class () extends Migration {
     public function up(): void
     {
         Schema::create('moderation_records', function (Blueprint $table) {
@@ -24,14 +23,20 @@ return new class extends Migration
             $table->string('post_id', 36)->index();
             $table->string('author_id', 36)->index();    // Node.js user UUID
             $table->text('content');                      // snapshot at time of analysis
-            $table->enum('verdict', ['safe', 'review', 'remove'])->index();
+            // $table->enum('verdict', ['safe', 'review', 'remove'])->index();
+            $table->string('verdict', 20)->index();
             $table->unsignedSmallInteger('confidence_pct'); // 0–100, stored as integer
             $table->json('categories');                   // ["hate_speech", "spam", ...]
             $table->text('explanation');
             $table->json('flagged_phrases');
-            $table->string('model', 80);                  // which Claude model was used
-            $table->enum('trigger', ['auto', 'manual'])
-                  ->default('auto')
+            $table->string('model', 80);                  // which ai model was used
+
+            // $table->enum('trigger', ['auto', 'manual'])
+            //       ->default('auto')
+            //       ->comment('auto = scheduled scan, manual = admin request');
+
+            // Values: 'auto', 'manual'
+            $table->string('trigger', 20)->default('auto')
                   ->comment('auto = scheduled scan, manual = admin request');
             $table->timestamps();                         // created_at = when analysed
 

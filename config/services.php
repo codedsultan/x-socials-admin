@@ -36,18 +36,16 @@ return [
     ],
 
 
-      /*
+    /*
     |--------------------------------------------------------------------------
     | x-socials Node.js API
     |--------------------------------------------------------------------------
     */
     'xsocials' => [
-        'api_url'      => env('XSOCIALS_API_URL', 'http://localhost:4000/api'),
-        'admin_token'  => env('XSOCIALS_ADMIN_TOKEN'),
-        // The admin user's ID and email from the Node API
-        // These are set automatically when you paste your token — or manually:
-        'admin_id'     => env('XSOCIALS_ADMIN_ID', 'admin'),
-        'admin_email'  => env('XSOCIALS_ADMIN_EMAIL', 'admin@x-socials.local'),
+        'api_url'   => env('XSOCIALS_API_URL', 'http://localhost:4000/api'),
+        // Shared secret sent as X-Admin-Key header on every admin API call.
+        // Must match ADMIN_API_KEY in the Node.js .env
+        'admin_key' => env('XSOCIALS_ADMIN_KEY'),
     ],
 
     /*
@@ -59,5 +57,4 @@ return [
         'url'   => env('MODERATOR_URL', 'http://localhost:8001'),
         'model' => env('MODERATOR_MODEL', 'claude-haiku-3-5-20251001'),
     ],
-
 ];

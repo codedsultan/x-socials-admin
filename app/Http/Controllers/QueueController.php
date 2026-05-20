@@ -14,7 +14,9 @@ use App\Services\XSocialsApiService;
 
 class QueueController extends Controller
 {
-    public function __construct(private readonly XSocialsApiService $api) {}
+    public function __construct(private readonly XSocialsApiService $api)
+    {
+    }
 
     /**
      * Human review queue — pending items sorted by verdict severity then date.
@@ -25,7 +27,7 @@ class QueueController extends Controller
         $status  = $request->query('status', 'pending');
 
         $query = ModerationQueue::query()
-            ->when($verdict, fn($q) => $q->where('verdict', $verdict))
+            ->when($verdict, fn ($q) => $q->where('verdict', $verdict))
             ->where('status', $status)
             ->orderByRaw("CASE verdict WHEN 'remove' THEN 0 ELSE 1 END")  // 'remove' first
             ->orderBy('created_at', 'asc')   // oldest unresolved first
@@ -61,14 +63,13 @@ class QueueController extends Controller
      */
     public function keep(Request $request, int $id): RedirectResponse
     {
-        $item   = ModerationQueue::findOrFail($id);
-        $admin  = $this->resolveAdmin($request);
+        $item  = ModerationQueue::findOrFail($id);
+        $admin = $this->resolveAdmin($request);
 
-        $item->resolve($admin['id'], 'reviewed', $request->input('note'));
+        $item->resolve($admin->id, 'reviewed', $request->input('note'));
 
         AdminActionLog::record(
-            actorId:    $admin['id'],
-            actorEmail: $admin['email'],
+            actor:      $admin,
             action:     'dismiss_queue_item',
             targetType: 'comment',
             targetId:   $item->comment_id,
@@ -93,11 +94,10 @@ class QueueController extends Controller
             return back()->with('error', 'Could not delete comment from Node API. It may have already been deleted.');
         }
 
-        $item->resolve($admin['id'], 'removed', $request->input('note'));
+        $item->resolve($admin->id, 'removed', $request->input('note'));
 
         AdminActionLog::record(
-            actorId:    $admin['id'],
-            actorEmail: $admin['email'],
+            actor:      $admin,
             action:     'resolve_queue_item',
             targetType: 'comment',
             targetId:   $item->comment_id,
@@ -111,19 +111,14 @@ class QueueController extends Controller
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     /**
-     * Resolve the admin identity from the Inertia shared data.
-     * The admin token payload carries the user's ID and email.
+     * Resolve the authenticated admin from the Laravel session guard.
+     * This is always populated because the route is behind admin.auth middleware.
      *
-     * @return array{id: string, email: string}
+     * @return \App\Models\User
      */
-    private function resolveAdmin(Request $request): array
+    private function resolveAdmin(Request $request): \App\Models\User
     {
-        // The admin panel uses a service-account token — we parse it from config
-        // In production you would implement proper session-based admin auth.
-        // For now we use the configured admin token claims as a placeholder.
-        return [
-            'id'    => config('services.xsocials.admin_id', 'admin'),
-            'email' => config('services.xsocials.admin_email', 'admin@x-socials.local'),
-        ];
+        /** @var \App\Models\User */
+        return \Illuminate\Support\Facades\Auth::guard('admin')->user();
     }
 }

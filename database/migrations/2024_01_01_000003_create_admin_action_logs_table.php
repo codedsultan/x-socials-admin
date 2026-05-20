@@ -13,23 +13,24 @@ use Illuminate\Support\Facades\Schema;
  * actor_id references a user UUID from the Node.js app (the admin who acted).
  * target_id references the affected resource (user UUID, post ObjectId, etc.)
  */
-return new class extends Migration
-{
+return new class () extends Migration {
     public function up(): void
     {
         Schema::create('admin_action_logs', function (Blueprint $table) {
             $table->id();
             $table->string('actor_id', 36)->index();          // admin who performed action
             $table->string('actor_email', 255);               // snapshot — survives user deletion
-            $table->enum('action', [
-                'delete_post',
-                'delete_comment',
-                'set_role',
-                'suspend_user',
-                'reinstate_user',
-                'resolve_queue_item',
-                'dismiss_queue_item',
-            ])->index();
+            // $table->enum('action', [
+            //     'delete_post',
+            //     'delete_comment',
+            //     'set_role',
+            //     'suspend_user',
+            //     'reinstate_user',
+            //     'resolve_queue_item',
+            //     'dismiss_queue_item',
+            // ])->index();
+
+            $table->string('action', 50)->index();
             $table->string('target_type', 50);                // 'post' | 'comment' | 'user'
             $table->string('target_id', 36)->index();         // ID of affected resource
             $table->json('meta')->nullable();                 // before/after state, extra context

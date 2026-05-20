@@ -12,33 +12,71 @@ use Illuminate\Http\Client\Response;
  *
  * Two route prefixes are used:
  *   /api/*        — public endpoints (posts, comments, feed)
- *   /api/admin/*  — admin-only endpoints (require role=admin JWT)
+ *   /api/admin/*  — admin-only endpoints (require HMAC-signed requests)
  *
- * The XSOCIALS_ADMIN_TOKEN must be obtained by logging in as a user with
- * role='admin' via POST /api/auth/login.  The token embeds the role claim
- * and the Node.js requireAdmin middleware verifies it on every admin request.
+ * ── Path signing ─────────────────────────────────────────────────────────────
  *
- * Token refresh: for long-running Laravel queues, refresh the token before
- * it expires by calling POST /api/auth/refresh with the stored refreshToken.
+ * The Node.js requireAdminKey middleware receives req.path AFTER Express has
+ * stripped the mount prefix (/api/admin).  For example, a request to
+ * GET /api/admin/users arrives at the middleware as req.path = "/users".
+ *
+ * Therefore the canonical string must be signed with the stripped path only
+ * (the segment after /api/admin), NOT the full URL path.
+ *
+ * Mapping:
+ *   HTTP call path          Signed path   (req.path inside middleware)
+ *   /admin/stats            /stats
+ *   /admin/users            /users
+ *   /admin/users/{id}       /users/{id}
+ *   /admin/users/{id}/role  /users/{id}/role
+ *   /admin/posts/{id}       /posts/{id}
+ *   /admin/comments/{id}    /comments/{id}
  */
 class XSocialsApiService
 {
     private string $baseUrl;
-    private string $token;
 
     public function __construct()
     {
         $this->baseUrl = rtrim(config('services.xsocials.api_url', 'http://localhost:4000/api'), '/');
-        $this->token   = config('services.xsocials.admin_token', '');
     }
 
     // ── HTTP helpers ──────────────────────────────────────────────────────────
 
-    private function http(): \Illuminate\Http\Client\PendingRequest
+    /**
+     * Build an authenticated HTTP client.
+     *
+     * @param  string  $method      HTTP verb for the canonical string.
+     * @param  string  $signedPath  The path as Express sees it in req.path —
+     *                              i.e. the segment AFTER the /api/admin mount
+     *                              prefix (e.g. "/users", "/users/42/role").
+     * @param  string  $body        Raw JSON body; empty string for GET/DELETE.
+     */
+    private function http(string $method = 'GET', string $signedPath = '', string $body = ''): \Illuminate\Http\Client\PendingRequest
     {
-        return Http::withToken($this->token)
+        $key       = config('services.xsocials.admin_key', '');
+        $timestamp = (string) time();
+        $bodyHash  = hash('sha256', $body);
+        $canonical = strtoupper($method) . "\n" . $signedPath . "\n" . $timestamp . "\n" . $bodyHash;
+        $signature = hash_hmac('sha256', $canonical, $key);
+
+        return Http::withHeaders([
+                       'X-Admin-Timestamp' => $timestamp,
+                       'X-Admin-Signature' => $signature,
+                   ])
                    ->timeout(15)
                    ->baseUrl($this->baseUrl);
+    }
+
+    /**
+     * Build a signed client for POST/PATCH/PUT requests with a JSON body.
+     *
+     * @param  string  $signedPath  Same semantics as http() — the stripped path.
+     */
+    private function httpWithBody(string $method, string $signedPath, array $data): \Illuminate\Http\Client\PendingRequest
+    {
+        $body = json_encode($data, JSON_THROW_ON_ERROR);
+        return $this->http($method, $signedPath, $body)->withBody($body, 'application/json');
     }
 
     private function data(Response $response): array
@@ -49,114 +87,107 @@ class XSocialsApiService
 
     // ── Dashboard / Stats ─────────────────────────────────────────────────────
 
-    /**
-     * Fetch platform-wide stats from the dedicated admin endpoint.
-     * Returns: users{total,admins,suspended}, posts{total}, comments{total}, likes{total}
-     */
     public function getStats(): array
     {
         try {
-            $response = $this->http()->get('/admin/stats');
+            // req.path = /stats
+            $response = $this->http('GET', '/stats')->get('/admin/stats');
             return $this->data($response)['stats'] ?? [];
         } catch (\Throwable) {
             return [];
         }
     }
 
-    // ── Users (admin endpoints — includes email, role, suspended) ─────────────
+    // ── Users ─────────────────────────────────────────────────────────────────
 
-    /**
-     * Full user list for admin — offset paginated.
-     * Returns items[] with email/role/suspended and meta with total.
-     */
     public function getUsers(int $page = 1, int $limit = 20): array
     {
-        $response = $this->http()->get('/admin/users', ['page' => $page, 'limit' => $limit]);
+        // req.path = /users
+        $response = $this->http('GET', '/users')->get('/admin/users', ['page' => $page, 'limit' => $limit]);
         return $this->data($response);
     }
 
-    /**
-     * Single user — includes email, role, suspended, follower counts.
-     */
     public function getUser(string $id): array
     {
-        $response = $this->http()->get("/admin/users/{$id}");
+        // req.path = /users/{id}
+        $response = $this->http('GET', "/users/{$id}")->get("/admin/users/{$id}");
         return $this->data($response)['user'] ?? [];
     }
 
     /**
-     * Promote or demote a user.
-     *
      * @param  string  $role  'admin' | 'user'
      */
     public function setUserRole(string $userId, string $role): array
     {
-        $response = $this->http()->patch("/admin/users/{$userId}/role", ['role' => $role]);
+        // req.path = /users/{id}/role
+        $response = $this->httpWithBody('PATCH', "/users/{$userId}/role", ['role' => $role])
+                        ->patch("/admin/users/{$userId}/role");
         return $this->data($response)['user'] ?? [];
     }
 
-    /**
-     * Suspend or reinstate a user.
-     */
     public function setUserSuspended(string $userId, bool $suspended): array
     {
-        $response = $this->http()->patch("/admin/users/{$userId}/suspend", ['suspended' => $suspended]);
+        // req.path = /users/{id}/suspend
+        $response = $this->httpWithBody('PATCH', "/users/{$userId}/suspend", ['suspended' => $suspended])
+                        ->patch("/admin/users/{$userId}/suspend");
         return $this->data($response)['user'] ?? [];
     }
 
-    // ── Posts (public read, admin delete) ─────────────────────────────────────
+    // ── Posts ─────────────────────────────────────────────────────────────────
 
     /**
-     * List posts — public endpoint (offset + cursor pagination).
+     * Public endpoint — no HMAC signing required.
      */
     public function getPosts(int $page = 1, int $limit = 20, ?string $tag = null, ?string $authorId = null): array
     {
         $params = ['page' => $page, 'limit' => $limit];
-        if ($tag)      $params['tag']      = $tag;
-        if ($authorId) $params['authorId'] = $authorId;
+        if ($tag) {
+            $params['tag']      = $tag;
+        }
+        if ($authorId) {
+            $params['authorId'] = $authorId;
+        }
 
-        $response = $this->http()->get('/posts', $params);
+        $response = Http::timeout(15)->baseUrl($this->baseUrl)->get('/posts', $params);
         return $this->data($response);
     }
 
     /**
-     * Get a single post — public endpoint.
+     * Public endpoint — no HMAC signing required.
      */
     public function getPost(string $id): array
     {
-        $response = $this->http()->get("/posts/{$id}");
+        $response = Http::timeout(15)->baseUrl($this->baseUrl)->get("/posts/{$id}");
         return $this->data($response)['post'] ?? [];
     }
 
-    /**
-     * Admin-delete a post — bypasses authorship check.
-     */
     public function deletePost(string $id): bool
     {
-        $response = $this->http()->delete("/admin/posts/{$id}");
+        // req.path = /posts/{id}
+        $response = $this->http('DELETE', "/posts/{$id}")->delete("/admin/posts/{$id}");
         return $response->successful();
     }
 
-    // ── Comments (public read, admin delete) ──────────────────────────────────
+    // ── Comments ──────────────────────────────────────────────────────────────
 
     /**
-     * Keyset-paginated comments for a post — public endpoint.
+     * Public endpoint — no HMAC signing required.
      */
     public function getComments(string $postId, ?string $after = null, int $limit = 20): array
     {
         $params = ['limit' => $limit];
-        if ($after) $params['after'] = $after;
+        if ($after) {
+            $params['after'] = $after;
+        }
 
-        $response = $this->http()->get("/posts/{$postId}/comments", $params);
+        $response = Http::timeout(15)->baseUrl($this->baseUrl)->get("/posts/{$postId}/comments", $params);
         return $this->data($response);
     }
 
-    /**
-     * Admin-delete a comment — bypasses authorship check.
-     */
     public function deleteComment(string $commentId): bool
     {
-        $response = $this->http()->delete("/admin/comments/{$commentId}");
+        // req.path = /comments/{id}
+        $response = $this->http('DELETE', "/comments/{$commentId}")->delete("/admin/comments/{$commentId}");
         return $response->successful();
     }
 }
