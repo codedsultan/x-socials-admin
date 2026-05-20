@@ -10,8 +10,10 @@ class ModerationQueue extends Model
     protected $table = 'moderation_queue';
 
     protected $fillable = [
-        'comment_id',
+        'comment_id',        // null when content_type='post'
         'post_id',
+        'content_type',      // 'comment' | 'post'
+        'content_id',        // the ID of the comment or post in this queue entry
         'author_id',
         'content',
         'verdict',
@@ -36,18 +38,14 @@ class ModerationQueue extends Model
         return $this->belongsTo(ModerationRecord::class, 'moderation_record_id');
     }
 
-    public function isPending(): bool
-    {
-        return $this->status === 'pending';
-    }
+    public function isPending(): bool { return $this->status === 'pending'; }
+    public function isPost(): bool    { return $this->content_type === 'post'; }
+    public function isComment(): bool { return $this->content_type === 'comment'; }
 
-    /**
-     * Resolve a queue item — mark as reviewed (kept) or removed (deleted from Node).
-     */
-    public function resolve(string $adminId, string $status, ?string $note = null): void
+    public function resolve(int $adminId, string $status, ?string $note = null): void
     {
         $this->update([
-            'status'          => $status,   // 'reviewed' | 'removed'
+            'status'          => $status,
             'resolved_by'     => $adminId,
             'resolved_at'     => now(),
             'resolution_note' => $note,

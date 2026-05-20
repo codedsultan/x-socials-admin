@@ -25,11 +25,11 @@ interface Props {
 const actionLabel: Record<string, { label: string; className: string }> = {
     delete_post: { label: 'Deleted post', className: 'bg-danger/10 text-danger border-danger/20' },
     delete_comment: { label: 'Deleted comment', className: 'bg-danger/10 text-danger border-danger/20' },
-    set_role: { label: 'Changed role', className: 'bg-accent-500/10 text-accent-400 border-accent-500/20' },
     suspend_user: { label: 'Suspended user', className: 'bg-warning/10 text-warning border-warning/20' },
     reinstate_user: { label: 'Reinstated user', className: 'bg-success/10 text-success border-success/20' },
     resolve_queue_item: { label: 'Removed (queue)', className: 'bg-danger/10 text-danger border-danger/20' },
     dismiss_queue_item: { label: 'Kept (queue)', className: 'bg-success/10 text-success border-success/20' },
+    auto_remove: { label: 'Auto-removed', className: 'bg-orange-500/10 text-orange-400 border-orange-500/20' },
 };
 
 export default function AuditIndex({ logs, pagination, filters }: Props) {
@@ -67,11 +67,16 @@ export default function AuditIndex({ logs, pagination, filters }: Props) {
                                         <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border shrink-0', config.className)}>
                                             {config.label}
                                         </span>
-                                        <div className="min-w-0">
-                                            <span className="text-xs font-mono text-white/40">{log.target_type}: </span>
-                                            <span className="text-xs font-mono text-white/60">{log.target_id.slice(0, 20)}…</span>
+                                        <div className="min-w-0 flex items-center gap-2">
+                                            <span className="text-xs font-mono text-white/25 shrink-0">{log.target_type}:</span>
+                                            <span className="text-xs font-mono text-white/60 truncate">{log.target_id.slice(0, 20)}…</span>
                                         </div>
-                                        <p className="text-xs text-white/35 font-mono truncate">{log.actor_email}</p>
+                                        <p className="text-xs text-white/35 font-mono truncate">
+                                            {log.actor_email === 'system@auto-moderator'
+                                                ? <span className="text-orange-400/70">auto-moderator</span>
+                                                : log.actor_email
+                                            }
+                                        </p>
                                         <p className="text-xs text-white/25 font-mono whitespace-nowrap">{timeAgo(log.created_at)}</p>
                                     </div>
                                 );
@@ -101,6 +106,7 @@ export default function AuditIndex({ logs, pagination, filters }: Props) {
                         ))}
                     </div>
                 )}
+
             </div>
         </AdminLayout>
     );

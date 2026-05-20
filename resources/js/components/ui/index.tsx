@@ -4,10 +4,10 @@ import type { ModerationVerdict } from '@/types';
 // ── StatCard ──────────────────────────────────────────────────────────────────
 
 interface StatCardProps {
-    label:      string;
-    value:      string | number;
-    icon:       React.ReactNode;
-    trend?:     string;
+    label: string;
+    value: string | number;
+    icon: React.ReactNode;
+    trend?: string;
     className?: string;
 }
 
@@ -29,17 +29,17 @@ export function StatCard({ label, value, icon, trend, className }: StatCardProps
 // ── Badge ─────────────────────────────────────────────────────────────────────
 
 interface BadgeProps {
-    children:   React.ReactNode;
-    variant?:   'default' | 'accent' | 'success' | 'warning' | 'danger';
+    children: React.ReactNode;
+    variant?: 'default' | 'accent' | 'success' | 'warning' | 'danger';
     className?: string;
 }
 
 const badgeStyles = {
     default: 'bg-white/8 text-white/60 border-white/10',
-    accent:  'bg-accent-500/15 text-accent-400 border-accent-500/25',
+    accent: 'bg-accent-500/15 text-accent-400 border-accent-500/25',
     success: 'bg-success/10 text-success border-success/20',
     warning: 'bg-warning/10 text-warning border-warning/20',
-    danger:  'bg-danger/10 text-danger border-danger/20',
+    danger: 'bg-danger/10 text-danger border-danger/20',
 };
 
 export function Badge({ children, variant = 'default', className }: BadgeProps) {
@@ -95,10 +95,10 @@ export function TableSkeleton({ rows = 5, cols = 4 }: { rows?: number; cols?: nu
 // ── EmptyState ────────────────────────────────────────────────────────────────
 
 interface EmptyStateProps {
-    icon?:    React.ReactNode;
-    title:    string;
+    icon?: React.ReactNode;
+    title: string;
     message?: string;
-    action?:  React.ReactNode;
+    action?: React.ReactNode;
 }
 
 export function EmptyState({ icon, title, message, action }: EmptyStateProps) {
@@ -117,7 +117,7 @@ export function EmptyState({ icon, title, message, action }: EmptyStateProps) {
 // ── ConfidenceBar ─────────────────────────────────────────────────────────────
 
 export function ConfidenceBar({ value, verdict }: { value: number; verdict: ModerationVerdict }) {
-    const pct    = Math.round(value * 100);
+    const pct = Math.round(value * 100);
     const colors = { safe: 'bg-success', review: 'bg-warning', remove: 'bg-danger' };
 
     return (

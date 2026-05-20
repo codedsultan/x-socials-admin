@@ -114,16 +114,6 @@ class XSocialsApiService
         return $this->data($response)['user'] ?? [];
     }
 
-    /**
-     * @param  string  $role  'admin' | 'user'
-     */
-    public function setUserRole(string $userId, string $role): array
-    {
-        // req.path = /users/{id}/role
-        $response = $this->httpWithBody('PATCH', "/users/{$userId}/role", ['role' => $role])
-                        ->patch("/admin/users/{$userId}/role");
-        return $this->data($response)['user'] ?? [];
-    }
 
     public function setUserSuspended(string $userId, bool $suspended): array
     {

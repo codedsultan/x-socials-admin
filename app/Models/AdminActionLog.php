@@ -26,16 +26,16 @@ class AdminActionLog extends Model
 
     public function actor(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'actor_id');
+        return $this->belongsTo(AdminUser::class, 'actor_id');
     }
 
     /**
-     * Record an admin action from a typed User model.
+     * Record an admin action from a typed AdminUser model.
      *
      * @param  array<string,mixed>  $meta
      */
     public static function record(
-        User $actor,
+        AdminUser $actor,
         string    $action,
         string    $targetType,
         string    $targetId,

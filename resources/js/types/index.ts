@@ -75,6 +75,13 @@ export interface SharedData {
     app: {
         name: string;
     };
+    auth: {
+        user: {
+            id: number;
+            name: string;
+            email: string;
+        } | null;
+    };
 }
 
 export interface PageProps extends SharedData {

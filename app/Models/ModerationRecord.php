@@ -8,8 +8,10 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class ModerationRecord extends Model
 {
     protected $fillable = [
-        'comment_id',
+        'comment_id',        // null when content_type='post'
         'post_id',
+        'content_type',      // 'comment' | 'post'
+        'content_id',        // ID of the comment or post being analysed
         'author_id',
         'content',
         'verdict',
@@ -27,15 +29,16 @@ class ModerationRecord extends Model
         'confidence_pct'  => 'integer',
     ];
 
-    /** The queue entry created from this record, if any */
     public function queueItem(): HasOne
     {
         return $this->hasOne(ModerationQueue::class, 'moderation_record_id');
     }
 
-    /** Convenience: confidence as a 0.0–1.0 float */
     public function confidenceFloat(): float
     {
         return $this->confidence_pct / 100;
     }
+
+    public function isPost(): bool    { return $this->content_type === 'post'; }
+    public function isComment(): bool { return $this->content_type === 'comment'; }
 }

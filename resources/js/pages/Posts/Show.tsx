@@ -1,7 +1,7 @@
 import AdminLayout from '@/layouts/admin-layout';
 import { Link, router } from '@inertiajs/react';
 import { Badge, EmptyState } from '@/components/ui';
-import { ArrowLeft, Heart, MessageCircle, Trash2, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Trash2, ShieldAlert, Zap } from 'lucide-react';
 import { timeAgo, formatDate } from '@/lib/utils';
 import type { Post, Comment, PageMeta } from '@/types';
 
@@ -31,11 +31,17 @@ export default function PostShow({ post, comments, meta }: Props) {
                         <ArrowLeft className="h-3.5 w-3.5" /> Back to Posts
                     </Link>
                     <div className="flex gap-2">
+                        <button
+                            onClick={() => router.post(`/scan/trigger/${post.id}`)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-xl bg-accent-500/15 border border-accent-500/25 text-accent-400 hover:bg-accent-500/25 transition-colors"
+                        >
+                            <Zap className="h-3.5 w-3.5" /> Scan comments
+                        </button>
                         <Link
                             href={`/moderation?postId=${post.id}`}
                             className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-xl bg-warning/10 border border-warning/20 text-warning hover:bg-warning/20 transition-colors"
                         >
-                            <ShieldAlert className="h-3.5 w-3.5" /> Moderate comments
+                            <ShieldAlert className="h-3.5 w-3.5" /> On-demand analysis
                         </Link>
                         <button
                             onClick={deletePost}

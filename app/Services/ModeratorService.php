@@ -5,11 +5,14 @@ namespace App\Services;
 use Illuminate\Support\Facades\Http;
 
 /**
+ * ModeratorService
+ *
  * Calls the FastAPI AI moderation service.
  *
- * The moderator service exposes two endpoints:
- *   POST /moderate       — analyse a single comment
- *   POST /moderate/batch — analyse multiple comments at once
+ * Three modes:
+ *   moderate()       — single comment, on-demand, result returned to caller (no DB write)
+ *   moderateBatch()  — up to 50 comments, on-demand, result returned to caller (no DB write)
+ *   triggerScan()    — background scan, FastAPI reads MongoDB and writes to our DB
  */
 class ModeratorService
 {
@@ -22,21 +25,18 @@ class ModeratorService
 
     /**
      * Analyse a single comment and return moderation metadata.
+     * Result is returned to the caller — nothing is written to the database.
+     * Use this for the admin modal preview.
      *
-     * @return array{
-     *   id: string,
-     *   verdict: 'safe'|'review'|'remove',
-     *   confidence: float,
-     *   categories: array<string>,
-     *   explanation: string,
-     *   flaggedPhrases: array<string>
-     * }
+     * @param  string|null  $forceModel  e.g. 'claude-sonnet-4-20250514' for re-analysis
      */
-    public function moderate(string $commentId, string $content, string $authorId = ''): array
+    public function moderate(string $commentId, string $content, string $authorId = '', ?string $forceModel = null): array
     {
+        $url = '/moderate' . ($forceModel ? '?force_model=' . urlencode($forceModel) : '');
+
         $response = Http::timeout(30)
             ->baseUrl($this->baseUrl)
-            ->post('/moderate', [
+            ->post($url, [
                 'id'       => $commentId,
                 'content'  => $content,
                 'authorId' => $authorId,
@@ -51,9 +51,10 @@ class ModeratorService
 
     /**
      * Analyse multiple comments in a single round-trip.
+     * Result is returned to the caller — nothing is written to the database.
+     * Use this for the Moderation/Index page preview.
      *
      * @param  array<array{id: string, content: string, authorId?: string}>  $comments
-     * @return array<array{id: string, verdict: string, ...}>
      */
     public function moderateBatch(array $comments): array
     {
@@ -71,6 +72,39 @@ class ModeratorService
         return $response->json()['results'] ?? [];
     }
 
+    /**
+     * Trigger a background scan on the FastAPI service.
+     *
+     * FastAPI reads comments directly from MongoDB, analyses them with Claude,
+     * and writes results to moderation_records and moderation_queue in our database.
+     * This method returns as soon as FastAPI confirms the scan has started.
+     *
+     * @param  string|null  $postId      Scope to a single post; null = full platform scan
+     * @param  string|null  $forceModel  Override Claude model for this run
+     * @return array{ started: bool, scan_run_id: int|null, message: string }
+     */
+    public function triggerScan(?string $postId = null, ?string $forceModel = null): array
+    {
+        $payload = array_filter([
+            'post_id'     => $postId,
+            'force_model' => $forceModel,
+        ]);
+
+        $response = Http::timeout(30)
+            ->baseUrl($this->baseUrl)
+            ->post('/scan/trigger', empty($payload) ? new \stdClass() : $payload);
+
+        if ($response->failed()) {
+            return [
+                'started'     => false,
+                'scan_run_id' => null,
+                'message'     => 'Moderator service unavailable: ' . $response->status(),
+            ];
+        }
+
+        return $response->json();
+    }
+
     private function errorResult(string $id, string $reason): array
     {
         return [
@@ -84,3 +118,4 @@ class ModeratorService
         ];
     }
 }
+
