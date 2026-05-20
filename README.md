@@ -71,19 +71,6 @@ configure. This means:
    phrases, and category breakdown
 6. Use **Keep comment** or **Remove comment** to take action
 
-## Generating an admin token
 
-The token is a standard access token from your Node API. Log in as an admin
-account and copy the `tokens.accessToken` from the response:
-
-```bash
-curl -X POST http://localhost:4000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"alice@example.com","password":"SeedPass123"}' \
-  | jq .data.tokens.accessToken
-```
-
-Paste the result into `XSOCIALS_ADMIN_TOKEN` in `.env`.
-
-> **Note:** The access token expires. For production, implement token refresh
-> inside `XSocialsApiService.php` using `POST /api/auth/refresh`.
+> **Note:** This is an evolving project
+>
