@@ -18,8 +18,7 @@ use Illuminate\Support\Facades\Schema;
  * Removing a comment from the Node API automatically moves the queue entry
  * to 'removed'. Keeping it moves to 'reviewed'.
  */
-return new class extends Migration
-{
+return new class () extends Migration {
     public function up(): void
     {
         Schema::create('moderation_queue', function (Blueprint $table) {
@@ -28,14 +27,19 @@ return new class extends Migration
             $table->string('post_id', 36)->index();
             $table->string('author_id', 36)->index();
             $table->text('content');
-            $table->enum('verdict', ['review', 'remove'])->index(); // only flagged items enter the queue
+            // $table->enum('verdict', ['review', 'remove'])->index(); // only flagged items enter the queue
+            $table->string('verdict', 20); // 'review' or 'remove'
+            $table->index('verdict');
             $table->unsignedSmallInteger('confidence_pct');
             $table->text('explanation');
-            $table->json('flagged_phrases')->default('[]');
+            $table->json('flagged_phrases')->nullable();
 
-            $table->enum('status', ['pending', 'reviewed', 'removed'])
-                  ->default('pending')
-                  ->index();
+            // $table->enum('status', ['pending', 'reviewed', 'removed'])
+            //       ->default('pending')
+            //       ->index();
+
+            $table->string('status', 20)->default('pending');
+            $table->index('status');
 
             $table->string('resolved_by', 36)->nullable(); // admin user UUID from Node
             $table->timestamp('resolved_at')->nullable();

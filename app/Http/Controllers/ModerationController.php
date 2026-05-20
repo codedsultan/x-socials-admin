@@ -15,7 +15,8 @@ class ModerationController extends Controller
     public function __construct(
         private readonly XSocialsApiService $api,
         private readonly ModeratorService   $moderator,
-    ) {}
+    ) {
+    }
 
     /**
      * Moderation queue — lists comments from a post and runs AI analysis.
@@ -36,7 +37,7 @@ class ModerationController extends Controller
 
             // Batch-moderate all loaded comments in one round-trip
             if (!empty($comments)) {
-                $batch      = array_map(fn($c) => [
+                $batch      = array_map(fn ($c) => [
                     'id'       => $c['id'],
                     'content'  => $c['content'],
                     'authorId' => $c['authorId'] ?? '',
@@ -83,6 +84,19 @@ class ModerationController extends Controller
     public function destroyComment(string $commentId): RedirectResponse
     {
         $deleted = $this->api->deleteComment($commentId);
+
+        if ($deleted) {
+            /** @var \App\Models\User $admin */
+            $admin = \Illuminate\Support\Facades\Auth::guard('admin')->user();
+            \App\Models\AdminActionLog::record(
+                actor:      $admin,
+                action:     'delete_comment',
+                targetType: 'comment',
+                targetId:   $commentId,
+                meta:       ['source' => 'on_demand_moderation'],
+                ip:         request()->ip(),
+            );
+        }
 
         return $deleted
             ? back()->with('success', 'Comment removed.')

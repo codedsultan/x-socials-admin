@@ -12,13 +12,17 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password','active'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+    use HasFactory;
+    use Notifiable;
+    use PasskeyAuthenticatable;
+    use TwoFactorAuthenticatable;
 
     /**
      * Get the attributes that should be cast.
@@ -33,6 +37,31 @@ class User extends Authenticatable implements PasskeyUser
             /* @chisel-2fa */
             'two_factor_confirmed_at' => 'datetime',
             /* @end-chisel-2fa */
+
+            'active'          => 'boolean',
+            'last_login_at'   => 'datetime',
         ];
+    }
+
+    /** All audit log entries produced by this admin. */
+    public function actionLogs(): HasMany
+    {
+        return $this->hasMany(AdminActionLog::class, 'actor_id');
+    }
+
+    public function isActive(): bool
+    {
+        return $this->active === true;
+    }
+
+    /**
+     * Record a successful login — update last_login_at and IP.
+     */
+    public function recordLogin(string $ip): void
+    {
+        $this->update([
+            'last_login_at' => now(),
+            'last_login_ip' => $ip,
+        ]);
     }
 }
