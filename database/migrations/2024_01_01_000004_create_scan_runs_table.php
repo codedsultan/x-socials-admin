@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\Schema;
  * Records timing, how many comments were scanned, and summary counts.
  * Used for the admin dashboard "last scan" widget.
  */
-return new class () extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('scan_runs', function (Blueprint $table) {

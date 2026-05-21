@@ -1,12 +1,12 @@
-import AdminLayout from '@/layouts/admin-layout';
 import { Link, router } from '@inertiajs/react';
-import { Badge, EmptyState } from '@/components/ui';
 import {
     FileText, ChevronLeft, ChevronRight,
     Trash2, Eye, Heart, Search,
 } from 'lucide-react';
-import { timeAgo, truncate, formatNumber, cn } from '@/lib/utils';
 import { useState } from 'react';
+import { Badge, EmptyState } from '@/components/ui';
+import AdminLayout from '@/layouts/admin-layout';
+import { timeAgo, truncate, formatNumber, cn } from '@/lib/utils';
 import type { Post, PageMeta } from '@/types';
 
 interface Props {
@@ -25,7 +25,10 @@ export default function PostsIndex({ posts, meta, page, filters }: Props) {
     }
 
     function deletePost(id: string) {
-        if (!confirm('Delete this post permanently?')) return;
+        if (!confirm('Delete this post permanently?')) {
+return;
+}
+
         router.delete(`/posts/${id}`, { preserveScroll: true });
     }
 

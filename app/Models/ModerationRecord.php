@@ -24,9 +24,9 @@ class ModerationRecord extends Model
     ];
 
     protected $casts = [
-        'categories'      => 'array',
+        'categories' => 'array',
         'flagged_phrases' => 'array',
-        'confidence_pct'  => 'integer',
+        'confidence_pct' => 'integer',
     ];
 
     public function queueItem(): HasOne
@@ -39,6 +39,13 @@ class ModerationRecord extends Model
         return $this->confidence_pct / 100;
     }
 
-    public function isPost(): bool    { return $this->content_type === 'post'; }
-    public function isComment(): bool { return $this->content_type === 'comment'; }
+    public function isPost(): bool
+    {
+        return $this->content_type === 'post';
+    }
+
+    public function isComment(): bool
+    {
+        return $this->content_type === 'comment';
+    }
 }

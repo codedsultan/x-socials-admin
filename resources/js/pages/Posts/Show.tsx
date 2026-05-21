@@ -1,7 +1,7 @@
-import AdminLayout from '@/layouts/admin-layout';
 import { Link, router } from '@inertiajs/react';
-import { Badge, EmptyState } from '@/components/ui';
 import { ArrowLeft, Heart, MessageCircle, Trash2, ShieldAlert, Zap } from 'lucide-react';
+import { Badge, EmptyState } from '@/components/ui';
+import AdminLayout from '@/layouts/admin-layout';
 import { timeAgo, formatDate } from '@/lib/utils';
 import type { Post, Comment, PageMeta } from '@/types';
 
@@ -13,12 +13,18 @@ interface Props {
 
 export default function PostShow({ post, comments, meta }: Props) {
     function deletePost() {
-        if (!confirm('Delete this post?')) return;
+        if (!confirm('Delete this post?')) {
+return;
+}
+
         router.delete(`/posts/${post.id}`);
     }
 
     function deleteComment(id: string) {
-        if (!confirm('Delete this comment?')) return;
+        if (!confirm('Delete this comment?')) {
+return;
+}
+
         router.delete(`/moderation/comments/${id}`, { preserveScroll: true });
     }
 

@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
 
 /**
  * Zero-downtime key rotation for the XSOCIALS_ADMIN_KEY shared secret.
@@ -46,8 +45,8 @@ class RotateAdminKey extends Command
 
     public function handle(): int
     {
-        $length  = max(32, (int) $this->option('length'));
-        $newKey  = bin2hex(random_bytes($length));
+        $length = max(32, (int) $this->option('length'));
+        $newKey = bin2hex(random_bytes($length));
         $current = config('services.xsocials.admin_key', '');
 
         $this->newLine();
@@ -61,7 +60,7 @@ class RotateAdminKey extends Command
         if (empty($current)) {
             $this->warn('  Current XSOCIALS_ADMIN_KEY is not set. Skipping old-key display.');
         } else {
-            $masked = substr($current, 0, 8) . str_repeat('*', max(0, strlen($current) - 16)) . substr($current, -8);
+            $masked = substr($current, 0, 8).str_repeat('*', max(0, strlen($current) - 16)).substr($current, -8);
             $this->line("  Current key (masked): <fg=gray>{$masked}</>");
         }
 

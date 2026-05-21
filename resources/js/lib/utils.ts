@@ -1,8 +1,8 @@
 import type { InertiaLinkProps } from '@inertiajs/react';
 import { clsx } from 'clsx';
 import type { ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
 import { formatDistanceToNow, format } from 'date-fns';
+import { twMerge } from 'tailwind-merge';
 import type { ModerationVerdict } from '@/types';
 
 export function cn(...inputs: ClassValue[]) {
@@ -15,19 +15,34 @@ export function toUrl(url: NonNullable<InertiaLinkProps['href']>): string {
 
 
 export function timeAgo(date?: string | null): string {
-    if (!date) return '—';
+    if (!date) {
+return '—';
+}
+
     return formatDistanceToNow(new Date(date), { addSuffix: true });
 }
 
 export function formatDate(date?: string | null): string {
-    if (!date) return '—';
+    if (!date) {
+return '—';
+}
+
     return format(new Date(date), 'MMM d, yyyy');
 }
 
 export function formatNumber(n?: number | null): string {
-    if (n == null) return '—';
-    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-    if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+    if (n == null) {
+return '—';
+}
+
+    if (n >= 1_000_000) {
+return `${(n / 1_000_000).toFixed(1)}M`;
+}
+
+    if (n >= 1_000) {
+return `${(n / 1_000).toFixed(1)}k`;
+}
+
     return String(n);
 }
 

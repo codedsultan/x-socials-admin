@@ -32,13 +32,13 @@ class ModeratorService
      */
     public function moderate(string $commentId, string $content, string $authorId = '', ?string $forceModel = null): array
     {
-        $url = '/moderate' . ($forceModel ? '?force_model=' . urlencode($forceModel) : '');
+        $url = '/moderate'.($forceModel ? '?force_model='.urlencode($forceModel) : '');
 
         $response = Http::timeout(30)
             ->baseUrl($this->baseUrl)
             ->post($url, [
-                'id'       => $commentId,
-                'content'  => $content,
+                'id' => $commentId,
+                'content' => $content,
                 'authorId' => $authorId,
             ]);
 
@@ -64,7 +64,7 @@ class ModeratorService
 
         if ($response->failed()) {
             return array_map(
-                fn($c) => $this->errorResult($c['id'], 'Moderation service unavailable'),
+                fn ($c) => $this->errorResult($c['id'], 'Moderation service unavailable'),
                 $comments
             );
         }
@@ -79,26 +79,26 @@ class ModeratorService
      * and writes results to moderation_records and moderation_queue in our database.
      * This method returns as soon as FastAPI confirms the scan has started.
      *
-     * @param  string|null  $postId      Scope to a single post; null = full platform scan
+     * @param  string|null  $postId  Scope to a single post; null = full platform scan
      * @param  string|null  $forceModel  Override Claude model for this run
      * @return array{ started: bool, scan_run_id: int|null, message: string }
      */
     public function triggerScan(?string $postId = null, ?string $forceModel = null): array
     {
         $payload = array_filter([
-            'post_id'     => $postId,
+            'post_id' => $postId,
             'force_model' => $forceModel,
         ]);
 
         $response = Http::timeout(30)
             ->baseUrl($this->baseUrl)
-            ->post('/scan/trigger', empty($payload) ? new \stdClass() : $payload);
+            ->post('/scan/trigger', empty($payload) ? new \stdClass : $payload);
 
         if ($response->failed()) {
             return [
-                'started'     => false,
+                'started' => false,
                 'scan_run_id' => null,
-                'message'     => 'Moderator service unavailable: ' . $response->status(),
+                'message' => 'Moderator service unavailable: '.$response->status(),
             ];
         }
 
@@ -108,14 +108,13 @@ class ModeratorService
     private function errorResult(string $id, string $reason): array
     {
         return [
-            'id'             => $id,
-            'verdict'        => 'review',
-            'confidence'     => 0.0,
-            'categories'     => [],
-            'explanation'    => $reason,
+            'id' => $id,
+            'verdict' => 'review',
+            'confidence' => 0.0,
+            'categories' => [],
+            'explanation' => $reason,
             'flaggedPhrases' => [],
-            'error'          => true,
+            'error' => true,
         ];
     }
 }
-

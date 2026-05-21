@@ -3,8 +3,8 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsureUserIsActive
@@ -18,7 +18,7 @@ class EnsureUserIsActive
     {
         $user = Auth::user();
 
-        if ($user && !$user->isActive()) {
+        if ($user && ! $user->isActive()) {
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();

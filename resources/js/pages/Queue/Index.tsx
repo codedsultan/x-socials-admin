@@ -1,12 +1,12 @@
-import AdminLayout from '@/layouts/admin-layout';
 import { Link, router } from '@inertiajs/react';
-import { VerdictBadge, ConfidenceBar, EmptyState } from '@/components/ui';
 import {
     CheckCircle, Trash2, ChevronLeft, ChevronRight,
     Clock, ShieldAlert, Filter, FileText, MessageCircle,
 } from 'lucide-react';
-import { timeAgo, cn } from '@/lib/utils';
 import { useState } from 'react';
+import { VerdictBadge, ConfidenceBar, EmptyState } from '@/components/ui';
+import AdminLayout from '@/layouts/admin-layout';
+import { timeAgo, cn } from '@/lib/utils';
 
 interface QueueItem {
     id: number;
@@ -157,15 +157,24 @@ export default function QueueIndex({ items, pagination, filters, pendingCounts, 
 
     function remove(id: number, contentType: string) {
         const label = contentType === 'post' ? 'post' : 'comment';
-        if (!confirm(`Remove this ${label} from the platform?`)) return;
+
+        if (!confirm(`Remove this ${label} from the platform?`)) {
+return;
+}
+
         router.post(`/queue/${id}/remove`, {}, { preserveScroll: true });
     }
 
     function filterHref(extra: Record<string, string | undefined>) {
         const params = new URLSearchParams();
         const merged = { ...filters, ...extra };
-        Object.entries(merged).forEach(([k, v]) => { if (v) params.set(k, v); });
+        Object.entries(merged).forEach(([k, v]) => {
+ if (v) {
+params.set(k, v);
+} 
+});
         const qs = params.toString();
+
         return `/queue${qs ? `?${qs}` : ''}`;
     }
 

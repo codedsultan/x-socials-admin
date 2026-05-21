@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\ModeratorService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use App\Services\ModeratorService;
 
 /**
  * ScanController
@@ -28,11 +28,11 @@ class ScanController extends Controller
      */
     public function trigger(Request $request): RedirectResponse
     {
-        $model  = $request->input('model');    // optional: override Claude model
+        $model = $request->input('model');    // optional: override Claude model
         $result = $this->moderator->triggerScan(postId: null, forceModel: $model);
 
-        if (!$result['started']) {
-            return back()->with('error', 'Could not start scan: ' . ($result['message'] ?? 'Moderator unavailable'));
+        if (! $result['started']) {
+            return back()->with('error', 'Could not start scan: '.($result['message'] ?? 'Moderator unavailable'));
         }
 
         return back()->with('success',
@@ -46,11 +46,11 @@ class ScanController extends Controller
      */
     public function triggerPost(Request $request, string $postId): RedirectResponse
     {
-        $model  = $request->input('model');
+        $model = $request->input('model');
         $result = $this->moderator->triggerScan(postId: $postId, forceModel: $model);
 
-        if (!$result['started']) {
-            return back()->with('error', 'Could not start scan: ' . ($result['message'] ?? 'Moderator unavailable'));
+        if (! $result['started']) {
+            return back()->with('error', 'Could not start scan: '.($result['message'] ?? 'Moderator unavailable'));
         }
 
         return redirect()

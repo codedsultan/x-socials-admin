@@ -29,8 +29,8 @@ class ModerationQueue extends Model
 
     protected $casts = [
         'flagged_phrases' => 'array',
-        'confidence_pct'  => 'integer',
-        'resolved_at'     => 'datetime',
+        'confidence_pct' => 'integer',
+        'resolved_at' => 'datetime',
     ];
 
     public function record(): BelongsTo
@@ -38,16 +38,27 @@ class ModerationQueue extends Model
         return $this->belongsTo(ModerationRecord::class, 'moderation_record_id');
     }
 
-    public function isPending(): bool { return $this->status === 'pending'; }
-    public function isPost(): bool    { return $this->content_type === 'post'; }
-    public function isComment(): bool { return $this->content_type === 'comment'; }
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
+    }
+
+    public function isPost(): bool
+    {
+        return $this->content_type === 'post';
+    }
+
+    public function isComment(): bool
+    {
+        return $this->content_type === 'comment';
+    }
 
     public function resolve(int $adminId, string $status, ?string $note = null): void
     {
         $this->update([
-            'status'          => $status,
-            'resolved_by'     => $adminId,
-            'resolved_at'     => now(),
+            'status' => $status,
+            'resolved_by' => $adminId,
+            'resolved_at' => now(),
             'resolution_note' => $note,
         ]);
     }

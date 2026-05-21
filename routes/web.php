@@ -1,13 +1,13 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\UsersController;
-use App\Http\Controllers\PostsController;
-use App\Http\Controllers\ModerationController;
-use App\Http\Controllers\QueueController;
 use App\Http\Controllers\AuditController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ModerationController;
+use App\Http\Controllers\PostsController;
+use App\Http\Controllers\QueueController;
 use App\Http\Controllers\ScanController;
+use App\Http\Controllers\UsersController;
+use Illuminate\Support\Facades\Route;
 
 // ── Protected — requires an active admin session ──────────────────────────────
 
@@ -55,11 +55,6 @@ Route::middleware('auth')->group(function () {
     });
 
 });
-
-
-
-
-
 
 // Route::middleware(['auth', 'verified'])->group(function () {
 //     Route::inertia('dashboard', 'dashboard')->name('dashboard');

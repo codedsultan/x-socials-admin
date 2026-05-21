@@ -2,15 +2,14 @@
 
 namespace App\Providers;
 
+use App\Console\Commands\ModerationScanCommand;
+use App\Services\ModeratorService;
+use App\Services\XSocialsApiService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
-use App\Services\XSocialsApiService;
-use App\Services\ModeratorService;
-use App\Services\ModerationScanService;
-use App\Console\Commands\ModerationScanCommand;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,7 +20,6 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(XSocialsApiService::class);
         $this->app->singleton(ModeratorService::class);
-        $this->app->singleton(ModerationScanService::class);
     }
 
     /**
@@ -30,9 +28,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
-        if ($this->app->runningInConsole()) {
-            $this->commands([ModerationScanCommand::class]);
-        }
+        // if ($this->app->runningInConsole()) {
+        //     $this->commands([ModerationScanCommand::class]);
+        // }
     }
 
     /**

@@ -1,7 +1,7 @@
-import AdminLayout from '@/layouts/admin-layout';
 import { Link } from '@inertiajs/react';
-import { EmptyState } from '@/components/ui';
 import { ScrollText, ChevronLeft, ChevronRight } from 'lucide-react';
+import { EmptyState } from '@/components/ui';
+import AdminLayout from '@/layouts/admin-layout';
 import { timeAgo, cn } from '@/lib/utils';
 
 interface LogEntry {
@@ -32,7 +32,7 @@ const actionLabel: Record<string, { label: string; className: string }> = {
     auto_remove: { label: 'Auto-removed', className: 'bg-orange-500/10 text-orange-400 border-orange-500/20' },
 };
 
-export default function AuditIndex({ logs, pagination, filters }: Props) {
+export default function AuditIndex({ logs, pagination }: Props) {
     return (
         <AdminLayout title="Audit Log">
             <div className="space-y-6">
@@ -62,6 +62,7 @@ export default function AuditIndex({ logs, pagination, filters }: Props) {
                         <div className="divide-y divide-white/5">
                             {logs.map(log => {
                                 const config = actionLabel[log.action] ?? { label: log.action, className: 'bg-white/8 text-white/50 border-white/10' };
+
                                 return (
                                     <div key={log.id} className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-4 px-6 py-3.5 hover:bg-white/3 transition-colors">
                                         <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border shrink-0', config.className)}>

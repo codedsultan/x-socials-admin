@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdminActionLog;
+use App\Models\User;
+use App\Services\XSocialsApiService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
-use App\Services\XSocialsApiService;
 
 class PostsController extends Controller
 {
@@ -14,29 +17,29 @@ class PostsController extends Controller
 
     public function index(Request $request): Response
     {
-        $page     = (int) $request->query('page', 1);
-        $tag      = $request->query('tag');
+        $page = (int) $request->query('page', 1);
+        $tag = $request->query('tag');
         $authorId = $request->query('authorId');
 
         $data = $this->api->getPosts($page, 20, $tag, $authorId);
 
         return Inertia::render('Posts/Index', [
-            'posts'    => $data['items'] ?? [],
-            'meta'     => $data['meta']  ?? [],
-            'page'     => $page,
-            'filters'  => ['tag' => $tag, 'authorId' => $authorId],
+            'posts' => $data['items'] ?? [],
+            'meta' => $data['meta'] ?? [],
+            'page' => $page,
+            'filters' => ['tag' => $tag, 'authorId' => $authorId],
         ]);
     }
 
     public function show(string $id): Response
     {
-        $post     = $this->api->getPost($id);
+        $post = $this->api->getPost($id);
         $comments = $this->api->getComments($id);
 
         return Inertia::render('Posts/Show', [
-            'post'     => $post,
+            'post' => $post,
             'comments' => $comments['items'] ?? [],
-            'meta'     => $comments['meta']  ?? [],
+            'meta' => $comments['meta'] ?? [],
         ]);
     }
 
@@ -45,14 +48,14 @@ class PostsController extends Controller
         $deleted = $this->api->deletePost($id);
 
         if ($deleted) {
-            /** @var \App\Models\AdminUser $admin */
-            $admin = \Illuminate\Support\Facades\Auth::guard('admin')->user();
-            \App\Models\AdminActionLog::record(
-                actor:      $admin,
-                action:     'delete_post',
+            /** @var User $admin */
+            $admin = Auth::user();
+            AdminActionLog::record(
+                actor: $admin,
+                action: 'delete_post',
                 targetType: 'post',
-                targetId:   $id,
-                ip:         request()->ip(),
+                targetId: $id,
+                ip: request()->ip(),
             );
         }
 

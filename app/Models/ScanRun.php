@@ -21,20 +21,23 @@ class ScanRun extends Model
     ];
 
     protected $casts = [
-        'started_at'  => 'datetime',
+        'started_at' => 'datetime',
         'finished_at' => 'datetime',
     ];
 
     public function durationSeconds(): ?int
     {
-        if (!$this->finished_at) return null;
+        if (! $this->finished_at) {
+            return null;
+        }
+
         return $this->started_at->diffInSeconds($this->finished_at);
     }
 
     public function markCompleted(array $counts): void
     {
         $this->update(array_merge($counts, [
-            'status'      => 'completed',
+            'status' => 'completed',
             'finished_at' => now(),
         ]));
     }
@@ -42,9 +45,9 @@ class ScanRun extends Model
     public function markFailed(string $error): void
     {
         $this->update([
-            'status'        => 'failed',
+            'status' => 'failed',
             'error_message' => $error,
-            'finished_at'   => now(),
+            'finished_at' => now(),
         ]);
     }
 }

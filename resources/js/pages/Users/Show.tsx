@@ -1,7 +1,7 @@
-import AdminLayout from '@/layouts/admin-layout';
 import { Link } from '@inertiajs/react';
-import { Badge, EmptyState } from '@/components/ui';
 import { ArrowLeft, FileText, Users, Heart } from 'lucide-react';
+import { Badge, EmptyState } from '@/components/ui';
+import AdminLayout from '@/layouts/admin-layout';
 import { timeAgo, formatDate, formatNumber, truncate } from '@/lib/utils';
 import type { XUser as User, Post, PageMeta } from '@/types';
 

@@ -2,8 +2,9 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Http;
 
 /**
  * XSocialsApiService
@@ -46,26 +47,26 @@ class XSocialsApiService
     /**
      * Build an authenticated HTTP client.
      *
-     * @param  string  $method      HTTP verb for the canonical string.
+     * @param  string  $method  HTTP verb for the canonical string.
      * @param  string  $signedPath  The path as Express sees it in req.path —
      *                              i.e. the segment AFTER the /api/admin mount
      *                              prefix (e.g. "/users", "/users/42/role").
-     * @param  string  $body        Raw JSON body; empty string for GET/DELETE.
+     * @param  string  $body  Raw JSON body; empty string for GET/DELETE.
      */
-    private function http(string $method = 'GET', string $signedPath = '', string $body = ''): \Illuminate\Http\Client\PendingRequest
+    private function http(string $method = 'GET', string $signedPath = '', string $body = ''): PendingRequest
     {
-        $key       = config('services.xsocials.admin_key', '');
+        $key = config('services.xsocials.admin_key', '');
         $timestamp = (string) time();
-        $bodyHash  = hash('sha256', $body);
-        $canonical = strtoupper($method) . "\n" . $signedPath . "\n" . $timestamp . "\n" . $bodyHash;
+        $bodyHash = hash('sha256', $body);
+        $canonical = strtoupper($method)."\n".$signedPath."\n".$timestamp."\n".$bodyHash;
         $signature = hash_hmac('sha256', $canonical, $key);
 
         return Http::withHeaders([
-                       'X-Admin-Timestamp' => $timestamp,
-                       'X-Admin-Signature' => $signature,
-                   ])
-                   ->timeout(15)
-                   ->baseUrl($this->baseUrl);
+            'X-Admin-Timestamp' => $timestamp,
+            'X-Admin-Signature' => $signature,
+        ])
+            ->timeout(15)
+            ->baseUrl($this->baseUrl);
     }
 
     /**
@@ -73,15 +74,17 @@ class XSocialsApiService
      *
      * @param  string  $signedPath  Same semantics as http() — the stripped path.
      */
-    private function httpWithBody(string $method, string $signedPath, array $data): \Illuminate\Http\Client\PendingRequest
+    private function httpWithBody(string $method, string $signedPath, array $data): PendingRequest
     {
         $body = json_encode($data, JSON_THROW_ON_ERROR);
+
         return $this->http($method, $signedPath, $body)->withBody($body, 'application/json');
     }
 
     private function data(Response $response): array
     {
         $response->throw();
+
         return $response->json()['data'] ?? [];
     }
 
@@ -92,6 +95,7 @@ class XSocialsApiService
         try {
             // req.path = /stats
             $response = $this->http('GET', '/stats')->get('/admin/stats');
+
             return $this->data($response)['stats'] ?? [];
         } catch (\Throwable) {
             return [];
@@ -104,6 +108,7 @@ class XSocialsApiService
     {
         // req.path = /users
         $response = $this->http('GET', '/users')->get('/admin/users', ['page' => $page, 'limit' => $limit]);
+
         return $this->data($response);
     }
 
@@ -111,15 +116,16 @@ class XSocialsApiService
     {
         // req.path = /users/{id}
         $response = $this->http('GET', "/users/{$id}")->get("/admin/users/{$id}");
+
         return $this->data($response)['user'] ?? [];
     }
-
 
     public function setUserSuspended(string $userId, bool $suspended): array
     {
         // req.path = /users/{id}/suspend
         $response = $this->httpWithBody('PATCH', "/users/{$userId}/suspend", ['suspended' => $suspended])
-                        ->patch("/admin/users/{$userId}/suspend");
+            ->patch("/admin/users/{$userId}/suspend");
+
         return $this->data($response)['user'] ?? [];
     }
 
@@ -132,13 +138,14 @@ class XSocialsApiService
     {
         $params = ['page' => $page, 'limit' => $limit];
         if ($tag) {
-            $params['tag']      = $tag;
+            $params['tag'] = $tag;
         }
         if ($authorId) {
             $params['authorId'] = $authorId;
         }
 
         $response = Http::timeout(15)->baseUrl($this->baseUrl)->get('/posts', $params);
+
         return $this->data($response);
     }
 
@@ -148,6 +155,7 @@ class XSocialsApiService
     public function getPost(string $id): array
     {
         $response = Http::timeout(15)->baseUrl($this->baseUrl)->get("/posts/{$id}");
+
         return $this->data($response)['post'] ?? [];
     }
 
@@ -155,6 +163,7 @@ class XSocialsApiService
     {
         // req.path = /posts/{id}
         $response = $this->http('DELETE', "/posts/{$id}")->delete("/admin/posts/{$id}");
+
         return $response->successful();
     }
 
@@ -171,6 +180,7 @@ class XSocialsApiService
         }
 
         $response = Http::timeout(15)->baseUrl($this->baseUrl)->get("/posts/{$postId}/comments", $params);
+
         return $this->data($response);
     }
 
@@ -178,6 +188,7 @@ class XSocialsApiService
     {
         // req.path = /comments/{id}
         $response = $this->http('DELETE', "/comments/{$commentId}")->delete("/admin/comments/{$commentId}");
+
         return $response->successful();
     }
 }

@@ -40,6 +40,7 @@ export default function AdminLayout({ children, title }: Props) {
                 <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
                     {nav.map(({ href, icon: Icon, label }) => {
                         const active = href === '/' ? url === '/' : url.startsWith(href);
+
                         return (
                             <Link
                                 key={href}

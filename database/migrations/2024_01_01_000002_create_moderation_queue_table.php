@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class () extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('moderation_queue', function (Blueprint $table) {
@@ -22,8 +23,8 @@ return new class () extends Migration {
             $table->timestamp('resolved_at')->nullable();
             $table->text('resolution_note')->nullable();
             $table->foreignId('moderation_record_id')
-                  ->constrained('moderation_records')
-                  ->cascadeOnDelete();
+                ->constrained('moderation_records')
+                ->cascadeOnDelete();
             $table->string('content_type', 20)->default('comment')->comment('comment, post');
             $table->string('content_id', 36)->comment('ID of comment or post');
             $table->timestamps();

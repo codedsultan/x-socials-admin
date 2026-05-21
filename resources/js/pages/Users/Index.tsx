@@ -1,7 +1,7 @@
-import AdminLayout from '@/layouts/admin-layout';
 import { Link } from '@inertiajs/react';
-import { Badge, EmptyState, TableSkeleton } from '@/components/ui';
 import { Users, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
+import { Badge, EmptyState, TableSkeleton } from '@/components/ui';
+import AdminLayout from '@/layouts/admin-layout';
 import { timeAgo, formatNumber, cn } from '@/lib/utils';
 import type { XUser as User, PageMeta } from '@/types';
 

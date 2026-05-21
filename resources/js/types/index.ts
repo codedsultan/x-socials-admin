@@ -63,6 +63,11 @@ export interface ModerationResult {
     explanation: string;
     flaggedPhrases: string[];
     error?: boolean;
+    // Fields added by Fix 5 — present when result comes from moderation_records
+    // (background scan cache). Absent when result comes from a live AI call.
+    fromCache?: boolean;
+    analysedAt?: string | null;
+    model?: string;
 }
 
 // ── Inertia shared data ───────────────────────────────────────────────────────
