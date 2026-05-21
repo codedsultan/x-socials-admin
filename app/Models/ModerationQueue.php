@@ -1,19 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
+use App\Enums\ContentType;
+use App\Enums\ModerationStatus;
+use App\Enums\ModerationVerdict;
+use Database\Factories\ModerationQueueFactory;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ModerationQueue extends Model
 {
+    /** @use HasFactory<ModerationQueueFactory> */
+    use HasFactory;
+
     protected $table = 'moderation_queue';
 
     protected $fillable = [
-        'comment_id',        // null when content_type='post'
+        'comment_id',
         'post_id',
-        'content_type',      // 'comment' | 'post'
-        'content_id',        // the ID of the comment or post in this queue entry
+        'content_type',
+        'content_id',
         'author_id',
         'content',
         'verdict',
@@ -31,6 +42,9 @@ class ModerationQueue extends Model
         'flagged_phrases' => 'array',
         'confidence_pct' => 'integer',
         'resolved_at' => 'datetime',
+        'verdict' => ModerationVerdict::class,
+        'status' => ModerationStatus::class,
+        'content_type' => ContentType::class,
     ];
 
     public function record(): BelongsTo
@@ -38,26 +52,70 @@ class ModerationQueue extends Model
         return $this->belongsTo(ModerationRecord::class, 'moderation_record_id');
     }
 
+    // ── Scopes ────────────────────────────────────────────────────────────────
+
+    public function scopePending(Builder $query): Builder
+    {
+        return $query->where('status', ModerationStatus::Pending);
+    }
+
+    public function scopeByStatus(Builder $query, ModerationStatus $status): Builder
+    {
+        return $query->where('status', $status);
+    }
+
+    public function scopeByVerdict(Builder $query, ModerationVerdict $verdict): Builder
+    {
+        return $query->where('verdict', $verdict);
+    }
+
+    public function scopeByContentType(Builder $query, ContentType $type): Builder
+    {
+        return $query->where('content_type', $type);
+    }
+
+    public function scopeResolved(Builder $query): Builder
+    {
+        return $query->whereIn('status', [ModerationStatus::Reviewed, ModerationStatus::Removed]);
+    }
+
+    public function scopeAutoRemoved(Builder $query): Builder
+    {
+        return $query->where('status', ModerationStatus::AutoRemoved);
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
     public function isPending(): bool
     {
-        return $this->status === 'pending';
+        return $this->status === ModerationStatus::Pending;
     }
 
     public function isPost(): bool
     {
-        return $this->content_type === 'post';
+        return $this->content_type === ContentType::Post;
     }
 
     public function isComment(): bool
     {
-        return $this->content_type === 'comment';
+        return $this->content_type === ContentType::Comment;
     }
 
-    public function resolve(int $adminId, string $status, ?string $note = null): void
+    public function resolve(int $adminId, ModerationStatus $status, ?string $note = null): void
     {
         $this->update([
             'status' => $status,
             'resolved_by' => $adminId,
+            'resolved_at' => now(),
+            'resolution_note' => $note,
+        ]);
+    }
+
+    public function autoRemove(string $note): void
+    {
+        $this->update([
+            'status' => ModerationStatus::AutoRemoved,
+            'resolved_by' => null,
             'resolved_at' => now(),
             'resolution_note' => $note,
         ]);

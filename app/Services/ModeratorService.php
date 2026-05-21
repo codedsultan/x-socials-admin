@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
@@ -13,6 +15,7 @@ use Illuminate\Support\Facades\Http;
  *   moderate()       — single comment, on-demand, result returned to caller (no DB write)
  *   moderateBatch()  — up to 50 comments, on-demand, result returned to caller (no DB write)
  *   triggerScan()    — background scan, FastAPI reads MongoDB and writes to our DB
+ *   health()         — FastAPI /health check; returns moderatorOk flag + realtime stats
  */
 class ModeratorService
 {
@@ -26,9 +29,9 @@ class ModeratorService
     /**
      * Analyse a single comment and return moderation metadata.
      * Result is returned to the caller — nothing is written to the database.
-     * Use this for the admin modal preview.
      *
      * @param  string|null  $forceModel  e.g. 'claude-sonnet-4-20250514' for re-analysis
+     * @return array<string,mixed>
      */
     public function moderate(string $commentId, string $content, string $authorId = '', ?string $forceModel = null): array
     {
@@ -52,9 +55,9 @@ class ModeratorService
     /**
      * Analyse multiple comments in a single round-trip.
      * Result is returned to the caller — nothing is written to the database.
-     * Use this for the Moderation/Index page preview.
      *
      * @param  array<array{id: string, content: string, authorId?: string}>  $comments
+     * @return array<array<string,mixed>>
      */
     public function moderateBatch(array $comments): array
     {
@@ -77,11 +80,10 @@ class ModeratorService
      *
      * FastAPI reads comments directly from MongoDB, analyses them with Claude,
      * and writes results to moderation_records and moderation_queue in our database.
-     * This method returns as soon as FastAPI confirms the scan has started.
      *
      * @param  string|null  $postId  Scope to a single post; null = full platform scan
      * @param  string|null  $forceModel  Override Claude model for this run
-     * @return array{ started: bool, scan_run_id: int|null, message: string }
+     * @return array{started: bool, scan_run_id: int|null, message: string}
      */
     public function triggerScan(?string $postId = null, ?string $forceModel = null): array
     {
@@ -105,6 +107,33 @@ class ModeratorService
         return $response->json();
     }
 
+    /**
+     * Check the FastAPI service health and return realtime queue stats.
+     *
+     * @return array{moderatorOk: bool, moderatorStats: array<string,mixed>}
+     */
+    public function health(): array
+    {
+        try {
+            $response = Http::timeout(5)
+                ->baseUrl($this->baseUrl)
+                ->get('/health');
+
+            if ($response->successful()) {
+                return [
+                    'moderatorOk' => true,
+                    'moderatorStats' => $response->json('realtime_stats', []),
+                ];
+            }
+        } catch (\Throwable) {
+        }
+
+        return ['moderatorOk' => false, 'moderatorStats' => []];
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
     private function errorResult(string $id, string $reason): array
     {
         return [

@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
+use App\Enums\AdminAction;
+use App\Enums\ModerationVerdict;
 use App\Models\ModerationQueue;
 use App\Services\XSocialsApiService;
 use Illuminate\Console\Command;
@@ -26,15 +30,15 @@ class AutoRemoveCommand extends Command
         $threshold = (float) ($this->option('threshold')
             ?? config('services.moderation.auto_enforce_threshold', 0.95));
 
-        $dryRun = $this->option('dry-run');
+        $dryRun = (bool) $this->option('dry-run');
 
         if ($dryRun) {
             $this->warn("DRY RUN — no content will be deleted (threshold={$threshold})");
         }
 
         $items = ModerationQueue::query()
-            ->where('status', 'pending')
-            ->where('verdict', 'remove')
+            ->pending()
+            ->byVerdict(ModerationVerdict::Remove)
             ->where('confidence_pct', '>=', (int) round($threshold * 100))
             ->orderBy('confidence_pct', 'desc')
             ->orderBy('created_at', 'asc')
@@ -56,7 +60,7 @@ class AutoRemoveCommand extends Command
             if ($dryRun) {
                 $this->line(sprintf(
                     '  WOULD REMOVE  type=%-8s  id=%s  confidence=%.0f%%',
-                    $item->content_type,
+                    $item->content_type->value,
                     $item->content_id,
                     $item->confidence_pct,
                 ));
@@ -65,53 +69,38 @@ class AutoRemoveCommand extends Command
                 continue;
             }
 
-            // [Fix 2] Branch on content_type — mirrors QueueController::remove().
-            // Post-type items use deletePost() against /admin/posts/{id}.
-            // Comment-type items use deleteComment() against /admin/comments/{id}.
-            // The original always called deleteComment($item->comment_id), which
-            // is NULL for post queue items, producing a 404 that was silently
-            // logged as a warning and then incorrectly marked auto_removed.
             $deleted = $item->isPost()
                 ? $this->api->deletePost($item->content_id)
                 : $this->api->deleteComment($item->content_id);
 
             if (! $deleted) {
                 Log::warning('AutoRemove: Node.js delete failed', [
-                    'content_type' => $item->content_type,
+                    'content_type' => $item->content_type->value,
                     'content_id' => $item->content_id,
                     'confidence_pct' => $item->confidence_pct,
                 ]);
                 $failed++;
             }
 
-            // Always update queue + audit log even on API failure:
-            // the content is likely already gone (404) or the admin can
-            // investigate via the audit log's api_success=false field.
-            $item->update([
-                'status' => 'auto_removed',
-                'resolved_at' => now(),
-                'resolved_by' => null,
-                'resolution_note' => sprintf(
-                    'Auto-removed by scheduler: confidence=%.0f%%, threshold=%.0f%%',
-                    $item->confidence_pct,
-                    $threshold * 100
-                ),
-            ]);
+            $item->autoRemove(sprintf(
+                'Auto-removed by scheduler: confidence=%.0f%%, threshold=%.0f%%',
+                $item->confidence_pct,
+                $threshold * 100
+            ));
 
-            // actor_id=0 signals the system — raw insert avoids FK constraint
-            // on admin_users.id=0.
+            // actor_id=0 signals the system — raw insert avoids FK constraint on admin_users.id=0
             DB::table('admin_action_logs')->insert([
                 'actor_id' => 0,
                 'actor_email' => 'system@auto-moderator',
                 'actor_name' => 'Auto-Moderator',
-                'action' => 'auto_remove',
-                'target_type' => $item->content_type,   // [Fix 2] 'post' or 'comment'
-                'target_id' => $item->content_id,     // [Fix 2] always the right ID
+                'action' => AdminAction::AutoRemove->value,
+                'target_type' => $item->content_type->value,
+                'target_id' => $item->content_id,
                 'meta' => json_encode([
-                    'content_type' => $item->content_type,
+                    'content_type' => $item->content_type->value,
                     'confidence_pct' => $item->confidence_pct,
                     'threshold_pct' => (int) round($threshold * 100),
-                    'verdict' => 'remove',
+                    'verdict' => ModerationVerdict::Remove->value,
                     'explanation' => $item->explanation,
                     'api_success' => $deleted,
                 ]),
@@ -123,7 +112,7 @@ class AutoRemoveCommand extends Command
                 $removed++;
                 $this->line(sprintf(
                     '  Removed  type=%-8s  id=%s  confidence=%.0f%%',
-                    $item->content_type,
+                    $item->content_type->value,
                     $item->content_id,
                     $item->confidence_pct,
                 ));

@@ -1,13 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
+use App\Enums\AdminAction;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AdminActionLog extends Model
 {
-    public const UPDATED_AT = null; // append-only
+    public const UPDATED_AT = null;
 
     protected $fillable = [
         'actor_id',
@@ -29,14 +33,28 @@ class AdminActionLog extends Model
         return $this->belongsTo(User::class, 'actor_id');
     }
 
+    // ── Scopes ────────────────────────────────────────────────────────────────
+
+    public function scopeByAction(Builder $query, AdminAction|string $action): Builder
+    {
+        $value = $action instanceof AdminAction ? $action->value : $action;
+
+        return $query->where('action', $value);
+    }
+
+    public function scopeByActorId(Builder $query, int $actorId): Builder
+    {
+        return $query->where('actor_id', $actorId);
+    }
+
+    // ── Factory method ────────────────────────────────────────────────────────
+
     /**
-     * Record an admin action from a typed User model.
-     *
      * @param  array<string,mixed>  $meta
      */
     public static function record(
         User $actor,
-        string $action,
+        AdminAction $action,
         string $targetType,
         string $targetId,
         array $meta = [],
@@ -46,7 +64,7 @@ class AdminActionLog extends Model
             'actor_id' => $actor->id,
             'actor_email' => $actor->email,
             'actor_name' => $actor->name,
-            'action' => $action,
+            'action' => $action->value,
             'target_type' => $targetType,
             'target_id' => $targetId,
             'meta' => $meta,

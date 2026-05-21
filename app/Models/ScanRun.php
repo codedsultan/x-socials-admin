@@ -1,12 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
+use App\Enums\ScanRunStatus;
+use Database\Factories\ScanRunFactory;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ScanRun extends Model
 {
-    public const UPDATED_AT = null;
+    /** @use HasFactory<ScanRunFactory> */
+    use HasFactory;
+
+    public $timestamps = false;
 
     protected $fillable = [
         'status',
@@ -23,7 +32,17 @@ class ScanRun extends Model
     protected $casts = [
         'started_at' => 'datetime',
         'finished_at' => 'datetime',
+        'status' => ScanRunStatus::class,
     ];
+
+    // ── Scopes ────────────────────────────────────────────────────────────────
+
+    public function scopeFinished(Builder $query): Builder
+    {
+        return $query->whereIn('status', [ScanRunStatus::Completed, ScanRunStatus::Failed]);
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
 
     public function durationSeconds(): ?int
     {
@@ -37,7 +56,7 @@ class ScanRun extends Model
     public function markCompleted(array $counts): void
     {
         $this->update(array_merge($counts, [
-            'status' => 'completed',
+            'status' => ScanRunStatus::Completed,
             'finished_at' => now(),
         ]));
     }
@@ -45,7 +64,7 @@ class ScanRun extends Model
     public function markFailed(string $error): void
     {
         $this->update([
-            'status' => 'failed',
+            'status' => ScanRunStatus::Failed,
             'error_message' => $error,
             'finished_at' => now(),
         ]);

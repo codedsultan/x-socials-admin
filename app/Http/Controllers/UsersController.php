@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Services\XSocialsApiService;
@@ -14,9 +16,7 @@ class UsersController extends Controller
     public function index(Request $request): Response
     {
         $page = (int) $request->query('page', 1);
-        $limit = 20;
-
-        $data = $this->api->getUsers($page, $limit);
+        $data = $this->api->getUsers($page, 20);
 
         return Inertia::render('Users/Index', [
             'users' => $data['items'] ?? [],

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\AdminActionLog;
@@ -11,18 +13,18 @@ class AuditController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = AdminActionLog::query()
-            ->when($request->query('action'), fn ($q, $a) => $q->where('action', $a))
-            ->when($request->query('actorId'), fn ($q, $id) => $q->where('actor_id', $id))
+        $paginator = AdminActionLog::query()
+            ->when($request->query('action'), fn ($q, $a) => $q->byAction($a))
+            ->when($request->query('actorId'), fn ($q, $id) => $q->byActorId((int) $id))
             ->latest('created_at')
             ->paginate(50);
 
         return Inertia::render('Audit/Index', [
-            'logs' => $query->items(),
+            'logs' => $paginator->items(),
             'pagination' => [
-                'total' => $query->total(),
-                'currentPage' => $query->currentPage(),
-                'lastPage' => $query->lastPage(),
+                'total' => $paginator->total(),
+                'currentPage' => $paginator->currentPage(),
+                'lastPage' => $paginator->lastPage(),
             ],
             'filters' => $request->only(['action', 'actorId']),
         ]);

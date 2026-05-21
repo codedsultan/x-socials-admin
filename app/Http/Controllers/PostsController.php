@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Enums\AdminAction;
 use App\Models\AdminActionLog;
 use App\Models\User;
 use App\Services\XSocialsApiService;
@@ -18,16 +21,13 @@ class PostsController extends Controller
     public function index(Request $request): Response
     {
         $page = (int) $request->query('page', 1);
-        $tag = $request->query('tag');
-        $authorId = $request->query('authorId');
-
-        $data = $this->api->getPosts($page, 20, $tag, $authorId);
+        $data = $this->api->getPosts($page, 20, $request->query('tag'), $request->query('authorId'));
 
         return Inertia::render('Posts/Index', [
             'posts' => $data['items'] ?? [],
             'meta' => $data['meta'] ?? [],
             'page' => $page,
-            'filters' => ['tag' => $tag, 'authorId' => $authorId],
+            'filters' => $request->only(['tag', 'authorId']),
         ]);
     }
 
@@ -52,7 +52,7 @@ class PostsController extends Controller
             $admin = Auth::user();
             AdminActionLog::record(
                 actor: $admin,
-                action: 'delete_post',
+                action: AdminAction::DeletePost,
                 targetType: 'post',
                 targetId: $id,
                 ip: request()->ip(),
