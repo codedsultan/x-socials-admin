@@ -1,100 +1,83 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use Inertia\Inertia;
-use Inertia\Response;
-use Illuminate\Http\Request;
+use App\Enums\AdminAction;
+use App\Http\Requests\ModerationAnalyseRequest;
+use App\Models\AdminActionLog;
+use App\Models\User;
+use App\Services\ModerationAnalysisService;
+use App\Services\ModeratorService;
+use App\Services\XSocialsApiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use App\Services\XSocialsApiService;
-use App\Services\ModeratorService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class ModerationController extends Controller
 {
     public function __construct(
         private readonly XSocialsApiService $api,
-        private readonly ModeratorService   $moderator,
-    ) {
-    }
+        private readonly ModeratorService $moderator,
+        private readonly ModerationAnalysisService $analysis,
+    ) {}
 
-    /**
-     * Moderation queue — lists comments from a post and runs AI analysis.
-     */
     public function index(Request $request): Response
     {
-        $postId = $request->query('postId', '');
-        $after  = $request->query('after');
+        $postId = (string) $request->query('postId', '');
+        $after = $request->query('after');
 
-        $comments  = [];
-        $meta      = [];
-        $modResults = [];
+        $comments = [];
+        $meta = [];
+        $analysisMap = [];
 
-        if ($postId) {
-            $data     = $this->api->getComments($postId, $after, 20);
+        if ($postId !== '') {
+            $data = $this->api->getComments($postId, $after, 20);
             $comments = $data['items'] ?? [];
-            $meta     = $data['meta']  ?? [];
-
-            // Batch-moderate all loaded comments in one round-trip
-            if (!empty($comments)) {
-                $batch      = array_map(fn ($c) => [
-                    'id'       => $c['id'],
-                    'content'  => $c['content'],
-                    'authorId' => $c['authorId'] ?? '',
-                ], $comments);
-
-                $modResults = $this->moderator->moderateBatch($batch);
-            }
+            $meta = $data['meta'] ?? [];
+            $analysisMap = $this->analysis->hydrateFromCache(array_column($comments, 'id'));
         }
 
-        // Key moderation results by comment ID for O(1) lookup in the template
-        $modByCommentId = collect($modResults)->keyBy('id')->toArray();
-
         return Inertia::render('Moderation/Index', [
-            'postId'   => $postId,
+            'postId' => $postId,
             'comments' => $comments,
-            'meta'     => $meta,
-            'analysis' => $modByCommentId,
+            'meta' => $meta,
+            'analysis' => $analysisMap,
         ]);
     }
 
-    /**
-     * Analyse a single comment on demand (called from the comment detail modal).
-     */
-    public function analyse(Request $request): JsonResponse
+    public function analyse(ModerationAnalyseRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'id'       => ['required', 'string'],
-            'content'  => ['required', 'string'],
-            'authorId' => ['nullable', 'string'],
-        ]);
+        $validated = $request->validated();
 
         $result = $this->moderator->moderate(
             $validated['id'],
             $validated['content'],
-            $validated['authorId'] ?? ''
+            $validated['authorId'] ?? '',
+            $validated['force_model'] ?? null,
         );
 
         return response()->json($result);
     }
 
-    /**
-     * Admin deletes a comment after reviewing the AI verdict.
-     */
     public function destroyComment(string $commentId): RedirectResponse
     {
         $deleted = $this->api->deleteComment($commentId);
 
         if ($deleted) {
-            /** @var \App\Models\User $admin */
-            $admin = \Illuminate\Support\Facades\Auth::guard('admin')->user();
-            \App\Models\AdminActionLog::record(
-                actor:      $admin,
-                action:     'delete_comment',
+            /** @var User $admin */
+            $admin = Auth::user();
+            AdminActionLog::record(
+                actor: $admin,
+                action: AdminAction::DeleteComment,
                 targetType: 'comment',
-                targetId:   $commentId,
-                meta:       ['source' => 'on_demand_moderation'],
-                ip:         request()->ip(),
+                targetId: $commentId,
+                meta: ['source' => 'on_demand_moderation'],
+                ip: request()->ip(),
             );
         }
 

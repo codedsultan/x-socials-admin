@@ -142,7 +142,6 @@
     }
 } */
 
-
 @layer base {
     * {
         @apply border-white/10;
@@ -161,16 +160,16 @@
     }
 
     ::-webkit-scrollbar-thumb {
-        @apply bg-white/20 rounded-full;
+        @apply rounded-full bg-white/20;
     }
 }
 
 @layer utilities {
     .glass {
-        @apply bg-white/5 backdrop-blur-sm border border-white/10;
+        @apply border border-white/10 bg-white/5 backdrop-blur-sm;
     }
 
     .glass-hover {
-        @apply hover:bg-white/8 transition-colors duration-150;
+        @apply transition-colors duration-150 hover:bg-white/8;
     }
 }

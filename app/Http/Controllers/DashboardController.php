@@ -1,49 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Services\DashboardService;
+use App\Services\ModeratorService;
 use Inertia\Inertia;
 use Inertia\Response;
-use App\Services\XSocialsApiService;
 
 class DashboardController extends Controller
 {
-    public function __construct(private readonly XSocialsApiService $api) {}
+    public function __construct(
+        private readonly DashboardService $dashboard,
+        private readonly ModeratorService $moderator,
+    ) {}
 
     public function index(): Response
     {
-        $stats   = [];
-        $apiOk   = true;
-
-        try {
-            $users   = $this->api->getUsers(1, 1);
-            $posts   = $this->api->getPosts(1, 1);
-            $stats   = [
-                'totalUsers'  => $users['meta']['total'] ?? 0,
-                'totalPosts'  => $posts['meta']['total'] ?? 0,
-            ];
-        } catch (\Throwable) {
-            $stats = ['totalUsers' => '—', 'totalPosts' => '—'];
-            $apiOk = false;
-        }
-
-        // Queue stats come from Laravel's own DB — always available
-        $queueStats = [
-            'pendingRemove' => \App\Models\ModerationQueue::where('status', 'pending')->where('verdict', 'remove')->count(),
-            'pendingReview' => \App\Models\ModerationQueue::where('status', 'pending')->where('verdict', 'review')->count(),
-            'resolvedToday' => \App\Models\ModerationQueue::whereDate('resolved_at', today())->count(),
-        ];
-
-        $lastScan = \App\Models\ScanRun::query()
-            ->whereIn('status', ['completed', 'failed'])
-            ->latest('started_at')
-            ->first();
-
         return Inertia::render('Dashboard/Index', [
-            'stats'      => $stats,
-            'queueStats' => $queueStats,
-            'lastScan'   => $lastScan,
-            'apiOk'      => $apiOk,
+            ...$this->dashboard->platformStats(),
+            'queueStats' => $this->dashboard->queueStats(),
+            'lastScan' => $this->dashboard->lastScan(),
+            'triggerBreakdown' => $this->dashboard->triggerBreakdown(),
+            'autoThreshold' => (float) config('services.moderation.auto_enforce_threshold', 0.95),
+            ...$this->moderator->health(),
         ]);
     }
 }
