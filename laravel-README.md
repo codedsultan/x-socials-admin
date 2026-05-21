@@ -4,6 +4,17 @@ Laravel 13 + Inertia.js + React admin panel for the x-socials moderation
 system. Provides the human review queue, dashboard, on-demand content
 analysis, and the scheduled jobs that drive automated enforcement.
 
+## Stack
+
+| Layer | Technology |
+|---|---|
+| Backend | Laravel 13 (PHP 8.3+) |
+| Frontend | Inertia.js + React 19 + TypeScript |
+| Styling | Tailwind CSS (dark theme) |
+| Icons | Lucide React |
+| Charts | Recharts |
+| HTTP client | Laravel Http (Guzzle) |
+
 ## How it fits in the system
 
 ```
@@ -52,8 +63,8 @@ higher-quality model via FastAPI's on-demand endpoint.
 
 | Layer | Technology |
 |---|---|
-| Framework | Laravel 13 |
-| Frontend | Inertia.js + React 19 + TypeScript |
+| Framework | Laravel 11 |
+| Frontend | Inertia.js + React 18 + TypeScript |
 | Styling | Tailwind CSS v4 |
 | Auth | Laravel Fortify (admin guard) |
 | HTTP client | Laravel HTTP (wraps Guzzle) |
@@ -306,20 +317,5 @@ ORDER BY created_at DESC;
 
 | Service | Role |
 |---|---|
-| [x-socials](https://github.com/codedsultan/x-socials) | Node.js social platform backend API — content source |
-| [x-socials-web](https://github.com/codedsultan/x-socials-web) | Next.js 16 frontend for the x-socials API  |
-| [x-socials-moderator](https://github.com/codedsultan/x-socials-ai-moderator) | FastAPI AI engine — analyses content, writes results |
-
----
-
-## License
-
-MIT License — see the [LICENSE](LICENSE) file for details.
-
----
-
-## Author
-
-**Olusegun Ibraheem**
-- Website: [codesultan.xurl.fyi](https://codesultan.xurl.fyi)
-- Email: codesultan369@gmail.com
+| [x-socials](../x-socials-admin-moderation) | Node.js social platform — content source |
+| [x-socials-moderator](../x-socials-ai-moderator-main) | FastAPI AI engine — analyses content, writes results |
