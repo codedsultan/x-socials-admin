@@ -1,6 +1,5 @@
 import { Form, Link, router } from '@inertiajs/react';
 import {
-    Check,
     Clock,
     Mail,
     MailCheck,
@@ -53,6 +52,7 @@ function StatusBadge({ invitation }: { invitation: Invitation }) {
             </span>
         );
     }
+
     if (expires < now) {
         return (
             <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2 py-0.5 text-[11px] text-red-400">
@@ -60,6 +60,7 @@ function StatusBadge({ invitation }: { invitation: Invitation }) {
             </span>
         );
     }
+
     return (
         <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] text-amber-400">
             <Clock className="h-3 w-3" /> Pending

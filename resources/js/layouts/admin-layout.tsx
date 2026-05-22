@@ -10,8 +10,8 @@ import {
     Users,
 } from 'lucide-react';
 import { AppContent } from '@/components/app-content';
-import { AppShell } from '@/components/app-shell';
 import AppLogo from '@/components/app-logo';
+import { AppShell } from '@/components/app-shell';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -25,13 +25,13 @@ import {
     SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
-import audit from '@/routes/audit';
+import { dashboard } from '@/routes';
 import adminInvitations from '@/routes/admin/invitations';
+import audit from '@/routes/audit';
 import moderation from '@/routes/moderation';
 import posts from '@/routes/posts';
 import queue from '@/routes/queue';
 import users from '@/routes/users';
-import { dashboard } from '@/routes';
 import type { NavItem, PageProps } from '@/types';
 
 const adminNavItems: NavItem[] = [

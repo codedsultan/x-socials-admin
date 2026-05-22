@@ -8,9 +8,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import invitationRequest from '@/routes/invitation-request';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
-import invitationRequest from '@/routes/invitation-request';
 
 type Props = {
     status?: string;
