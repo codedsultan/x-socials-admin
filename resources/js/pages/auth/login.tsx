@@ -8,16 +8,21 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
+import invitationRequest from '@/routes/invitation-request';
 
 type Props = {
     status?: string;
     canResetPassword: boolean;
+    invitationRequestVisible: boolean;
 };
 
-export default function Login({ status, canResetPassword }: Props) {
+export default function Login({
+    status,
+    canResetPassword,
+    invitationRequestVisible,
+}: Props) {
     return (
         <>
             <Head title="Log in" />
@@ -92,12 +97,17 @@ export default function Login({ status, canResetPassword }: Props) {
                             </Button>
                         </div>
 
-                        <div className="text-center text-sm text-muted-foreground">
-                            Don't have an account?{' '}
-                            <TextLink href={register()} tabIndex={5}>
-                                Sign up
-                            </TextLink>
-                        </div>
+                        {invitationRequestVisible && (
+                            <div className="text-center text-sm text-muted-foreground">
+                                Need access?{' '}
+                                <TextLink
+                                    href={invitationRequest.create()}
+                                    tabIndex={5}
+                                >
+                                    Request an invitation
+                                </TextLink>
+                            </div>
+                        )}
                     </>
                 )}
             </Form>

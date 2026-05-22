@@ -71,8 +71,8 @@ function HealthPct({ pct }: { pct: number }) {
                 good
                     ? 'bg-success/10 border-success/20 text-success border'
                     : warning
-                      ? 'bg-warning/10 border-warning/20 text-warning border'
-                      : 'bg-danger/10 border-danger/20 text-danger border',
+                        ? 'bg-warning/10 border-warning/20 text-warning border'
+                        : 'bg-danger/10 border-danger/20 text-danger border',
             )}
         >
             <span
@@ -363,9 +363,9 @@ export default function Dashboard({
                                             500
                                             ? 'text-success'
                                             : (moderatorStats.avg_latency_ms ??
-                                                    0) < 1500
-                                              ? 'text-warning'
-                                              : 'text-danger',
+                                                0) < 1500
+                                                ? 'text-warning'
+                                                : 'text-danger',
                                     )}
                                 >
                                     {moderatorStats.avg_latency_ms ?? 0}ms
@@ -383,9 +383,9 @@ export default function Dashboard({
                                             1000
                                             ? 'text-success'
                                             : (moderatorStats.p95_latency_ms ??
-                                                    0) < 3000
-                                              ? 'text-warning'
-                                              : 'text-danger',
+                                                0) < 3000
+                                                ? 'text-warning'
+                                                : 'text-danger',
                                     )}
                                 >
                                     {moderatorStats.p95_latency_ms === 0
@@ -550,8 +550,8 @@ export default function Dashboard({
                             ok: apiOk,
                             icon: Activity,
                             label: apiOk
-                                ? 'x-socials API connected'
-                                : 'x-socials API unreachable',
+                                ? 'X-Socials API connected'
+                                : 'X-Socials API unreachable',
                             sub: apiOk
                                 ? 'Node.js API is healthy'
                                 : 'Check XSOCIALS_API_URL in .env',
