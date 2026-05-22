@@ -65,7 +65,7 @@ class DashboardService
     {
         return ModerationRecord::query()
             ->recentDays(7)
-            ->selectRaw('trigger, COUNT(*) as total')
+            ->selectRaw('`trigger`, COUNT(*) as total')
             ->groupBy('trigger')
             ->get()
             ->mapWithKeys(fn ($row) => [$row->trigger->value => (int) $row->total])
