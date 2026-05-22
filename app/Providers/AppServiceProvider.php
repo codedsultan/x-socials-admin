@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Console\Commands\ModerationScanCommand;
+// use App\Console\Commands\ModerationScanCommand;
 use App\Services\ModeratorService;
 use App\Services\XSocialsApiService;
 use Carbon\CarbonImmutable;
@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
+use Opcodes\LogViewer\Facades\LogViewer;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -44,6 +45,11 @@ class AppServiceProvider extends ServiceProvider
 
         Model::handleLazyLoadingViolationUsing(function ($model, $relation) {
             Log::warning("N+1 Detected: Lazy loading relation '{$relation}' on model '{$model}'.");
+        });
+
+        LogViewer::auth(function ($request) {
+            // return $request->user()->hasRole('super-admin');
+            return true;
         });
     }
 
