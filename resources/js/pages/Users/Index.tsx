@@ -30,7 +30,7 @@ export default function UsersIndex({ users, meta, page }: Props) {
 
                 {/* Table */}
                 <div className="glass overflow-hidden rounded-2xl">
-                    <div className="grid grid-cols-[1fr_1fr_auto_auto] border-b border-white/8 px-6 py-3 font-mono text-xs tracking-widest text-white/30 uppercase">
+                    <div className="grid grid-cols-[1fr_1fr_auto_auto] gap-4 border-b border-white/8 px-6 py-3 font-mono text-xs tracking-widest text-white/30 uppercase">
                         <span>User</span>
                         <span>Email</span>
                         <span>Joined</span>

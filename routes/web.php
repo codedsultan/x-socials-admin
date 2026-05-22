@@ -4,6 +4,7 @@ use App\Http\Controllers\AcceptInvitationController;
 use App\Http\Controllers\Admin\InvitationController;
 use App\Http\Controllers\Admin\InvitationRequestController as AdminInvitationRequestController;
 use App\Http\Controllers\Admin\InvitationSettingController;
+use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\AuditController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InvitationRequestController;
@@ -80,6 +81,12 @@ Route::middleware('auth')->group(function () {
         });
 
         Route::put('/settings/invitation-visibility', [InvitationSettingController::class, 'update'])->name('settings.invitation-visibility');
+
+        Route::prefix('team')->name('team.')->group(function () {
+            Route::get('/', [TeamController::class, 'index'])->name('index');
+            Route::patch('/{user}', [TeamController::class, 'update'])->name('update');
+            Route::delete('/{user}', [TeamController::class, 'destroy'])->name('destroy');
+        });
     });
 
 });

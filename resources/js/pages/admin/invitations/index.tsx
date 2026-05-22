@@ -1,4 +1,4 @@
-import { Form, Link, router } from '@inertiajs/react';
+import { Link, router, useForm } from '@inertiajs/react';
 import {
     Clock,
     Mail,
@@ -9,7 +9,16 @@ import {
     UserPlus,
     X,
 } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
@@ -72,12 +81,30 @@ export default function InvitationsIndex({
     invitations,
     invitationRequestVisible,
 }: Props) {
+    const [open, setOpen] = useState(false);
+
+    const { data, setData, post, processing, errors, reset } = useForm({
+        name: '',
+        email: '',
+    });
+
     function toggleVisibility() {
         router.put(
             adminSettings.invitationVisibility(),
             { invitation_request_visible: !invitationRequestVisible },
             { preserveScroll: true },
         );
+    }
+
+    function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        post(adminInvitations.store().url, {
+            preserveScroll: true,
+            onSuccess: () => {
+                reset();
+                setOpen(false);
+            },
+        });
     }
 
     return (
@@ -120,72 +147,18 @@ export default function InvitationsIndex({
                             )}
                         </button>
 
-                        <Link
-                            href={adminInvitationRequests.index()}
-                            className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors hover:bg-accent"
-                        >
-                            <UserPlus className="h-4 w-4" />
-                            View requests
-                        </Link>
-                    </div>
-                </div>
+                        <Button variant="outline" size="sm" asChild>
+                            <Link href={adminInvitationRequests.index().url}>
+                                <UserPlus className="h-4 w-4" />
+                                View requests
+                            </Link>
+                        </Button>
 
-                {/* Direct invite form */}
-                <div className="space-y-4 rounded-xl border p-5">
-                    <div className="flex items-center gap-2">
-                        <Send className="h-4 w-4 text-muted-foreground" />
-                        <h3 className="font-medium">Invite someone directly</h3>
+                        <Button onClick={() => setOpen(true)}>
+                            <Send className="h-4 w-4" />
+                            Send invite
+                        </Button>
                     </div>
-                    <Form
-                        action={adminInvitations.store().url}
-                        method="post"
-                        className="flex flex-wrap gap-3"
-                    >
-                        {({ processing, errors }) => (
-                            <>
-                                <div className="grid min-w-[180px] flex-1 gap-1">
-                                    <Label htmlFor="name" className="sr-only">
-                                        Name
-                                    </Label>
-                                    <Input
-                                        id="name"
-                                        name="name"
-                                        type="text"
-                                        placeholder="Name (optional)"
-                                    />
-                                </div>
-                                <div className="grid min-w-[220px] flex-1 gap-1">
-                                    <Label htmlFor="email" className="sr-only">
-                                        Email
-                                    </Label>
-                                    <Input
-                                        id="email"
-                                        name="email"
-                                        type="email"
-                                        required
-                                        placeholder="email@example.com"
-                                    />
-                                    {errors.email && (
-                                        <p className="text-xs text-destructive">
-                                            {errors.email}
-                                        </p>
-                                    )}
-                                </div>
-                                <Button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="shrink-0"
-                                >
-                                    {processing ? (
-                                        <Spinner />
-                                    ) : (
-                                        <Mail className="h-4 w-4" />
-                                    )}
-                                    Send invite
-                                </Button>
-                            </>
-                        )}
-                    </Form>
                 </div>
 
                 {/* Invitations table */}
@@ -280,6 +253,92 @@ export default function InvitationsIndex({
                     </div>
                 )}
             </div>
+
+            {/* Invite modal */}
+            <Dialog
+                open={open}
+                onOpenChange={(next) => {
+                    if (!processing) {
+                        setOpen(next);
+
+                        if (!next) {
+reset();
+}
+                    }
+                }}
+            >
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Mail className="h-4 w-4" />
+                            Send an invitation
+                        </DialogTitle>
+                        <DialogDescription>
+                            An email with a sign-up link will be sent to the
+                            recipient.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="invite-name">Name (optional)</Label>
+                            <Input
+                                id="invite-name"
+                                type="text"
+                                placeholder="Jane Smith"
+                                value={data.name}
+                                onChange={(e) =>
+                                    setData('name', e.target.value)
+                                }
+                                disabled={processing}
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <Label htmlFor="invite-email">Email</Label>
+                            <Input
+                                id="invite-email"
+                                type="email"
+                                required
+                                placeholder="jane@example.com"
+                                value={data.email}
+                                onChange={(e) =>
+                                    setData('email', e.target.value)
+                                }
+                                disabled={processing}
+                                autoFocus
+                            />
+                            {errors.email && (
+                                <p className="text-xs text-destructive">
+                                    {errors.email}
+                                </p>
+                            )}
+                        </div>
+
+                        <DialogFooter>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                    reset();
+                                    setOpen(false);
+                                }}
+                                disabled={processing}
+                            >
+                                Cancel
+                            </Button>
+                            <Button type="submit" disabled={processing}>
+                                {processing ? (
+                                    <Spinner />
+                                ) : (
+                                    <Mail className="h-4 w-4" />
+                                )}
+                                Send invite
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </AdminLayout>
     );
 }

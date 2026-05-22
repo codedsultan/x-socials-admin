@@ -1,29 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
+use App\Enums\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 /**
- * AdminUserSeeder
- *
  * Creates the initial admin user for the panel.
+ *
  * Run after migrations: php artisan db:seed
+ * Must be called AFTER RolesAndPermissionsSeeder.
  *
- * The password is intentionally obvious here — change it immediately
+ * The password is intentionally obvious — change it immediately
  * after first login in any non-local environment.
- *
- * For production: create accounts via
- *   php artisan admin:create-user
- * (see the CreateAdminUser artisan command)
  */
 class AdminUserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::firstOrCreate(
+        $admin = User::firstOrCreate(
             ['email' => 'admin@x-socials.local'],
             [
                 'name' => 'Admin',
@@ -31,6 +30,8 @@ class AdminUserSeeder extends Seeder
                 'active' => true,
             ]
         );
+
+        $admin->assignRole(Role::SuperAdmin->value);
 
         $this->command->info('Admin user ready: admin@x-socials.local / admin1234');
         $this->command->warn('Change the password immediately after first login!');

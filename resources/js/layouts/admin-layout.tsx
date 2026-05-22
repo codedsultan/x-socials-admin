@@ -7,6 +7,7 @@ import {
     MailOpen,
     ScrollText,
     ShieldAlert,
+    UserCog,
     Users,
 } from 'lucide-react';
 import { AppContent } from '@/components/app-content';
@@ -27,6 +28,7 @@ import {
 import { cn } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import adminInvitations from '@/routes/admin/invitations';
+import adminTeam from '@/routes/admin/team';
 import audit from '@/routes/audit';
 import moderation from '@/routes/moderation';
 import posts from '@/routes/posts';
@@ -42,6 +44,7 @@ const adminNavItems: NavItem[] = [
     { title: 'On-demand', href: moderation.index(), icon: ShieldAlert },
     { title: 'Audit Log', href: audit.index(), icon: ScrollText },
     { title: 'Invitations', href: adminInvitations.index(), icon: MailOpen },
+    { title: 'Admin Team', href: adminTeam.index(), icon: UserCog },
 ];
 
 interface Props {
