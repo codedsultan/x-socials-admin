@@ -51,18 +51,18 @@ COPY . .
 # Dump optimized autoloader now that all source files are present
 RUN composer dump-autoload --optimize --no-dev
 
-# Build-time arguments for Vite baked-in values
-ARG VITE_APP_NAME
-ARG VITE_REVERB_APP_KEY
-ARG VITE_REVERB_HOST
-ARG VITE_REVERB_PORT
-ARG VITE_REVERB_SCHEME
+# # Build-time arguments for Vite baked-in values
+# ARG VITE_APP_NAME
+# ARG VITE_REVERB_APP_KEY
+# ARG VITE_REVERB_HOST
+# ARG VITE_REVERB_PORT
+# ARG VITE_REVERB_SCHEME
 
-ENV VITE_APP_NAME=${VITE_APP_NAME} \
-    VITE_REVERB_APP_KEY=${VITE_REVERB_APP_KEY} \
-    VITE_REVERB_HOST=${VITE_REVERB_HOST} \
-    VITE_REVERB_PORT=${VITE_REVERB_PORT} \
-    VITE_REVERB_SCHEME=${VITE_REVERB_SCHEME}
+# ENV VITE_APP_NAME=${VITE_APP_NAME} \
+#     VITE_REVERB_APP_KEY=${VITE_REVERB_APP_KEY} \
+#     VITE_REVERB_HOST=${VITE_REVERB_HOST} \
+#     VITE_REVERB_PORT=${VITE_REVERB_PORT} \
+#     VITE_REVERB_SCHEME=${VITE_REVERB_SCHEME}
 
 # Build frontend assets
 RUN pnpm run build
@@ -100,10 +100,10 @@ RUN mkdir -p \
 # Reverb runs on 8081 — NOT 8080.
 # serversideup/php base image already binds Nginx on 8080.
 # Caddy routes WebSocket upgrades → 8081, plain HTTP → 8080.
-RUN mkdir -p /etc/services.d/reverb && \
-    printf '#!/bin/bash\nset -e\ncd /var/www/html\nexec php artisan reverb:start --host=0.0.0.0 --port=8081\n' \
-    > /etc/services.d/reverb/run && \
-    chmod +x /etc/services.d/reverb/run
+# RUN mkdir -p /etc/services.d/reverb && \
+#     printf '#!/bin/bash\nset -e\ncd /var/www/html\nexec php artisan reverb:start --host=0.0.0.0 --port=8081\n' \
+#     > /etc/services.d/reverb/run && \
+#     chmod +x /etc/services.d/reverb/run
 
 USER www-data
 
