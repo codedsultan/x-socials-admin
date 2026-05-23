@@ -58,15 +58,19 @@ class XSocialsApiService
     private function http(string $method = 'GET', string $signedPath = '', string $body = ''): PendingRequest
     {
         $key = config('services.xsocials.admin_key', '');
-        // $timestamp = (string) time();
-        $timestamp = (string) (int) (microtime(true) * 1000);
+        $timestamp = (string) time();
+        $nonce = bin2hex(random_bytes(16));
         $bodyHash = hash('sha256', $body);
-        $canonical = strtoupper($method)."\n".$signedPath."\n".$timestamp."\n".$bodyHash;
+        // $canonical = strtoupper($method)."\n".$signedPath."\n".$timestamp."\n".$bodyHash;
+        // $signature = hash_hmac('sha256', $canonical, $key);
+
+        $canonical = strtoupper($method)."\n".$signedPath."\n".$timestamp."\n".$nonce."\n".$bodyHash;
         $signature = hash_hmac('sha256', $canonical, $key);
 
         return Http::withHeaders([
             'X-Admin-Timestamp' => $timestamp,
             'X-Admin-Signature' => $signature,
+            'X-Admin-Nonce' => $nonce,
         ])
             ->timeout(15)
             ->baseUrl($this->baseUrl);
