@@ -58,7 +58,8 @@ class XSocialsApiService
     private function http(string $method = 'GET', string $signedPath = '', string $body = ''): PendingRequest
     {
         $key = config('services.xsocials.admin_key', '');
-        $timestamp = (string) time();
+        // $timestamp = (string) time();
+        $timestamp = (string) (int) (microtime(true) * 1000);
         $bodyHash = hash('sha256', $body);
         $canonical = strtoupper($method)."\n".$signedPath."\n".$timestamp."\n".$bodyHash;
         $signature = hash_hmac('sha256', $canonical, $key);
