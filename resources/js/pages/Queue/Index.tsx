@@ -58,7 +58,7 @@ interface Props {
 
 function ContentTypeBadge({ type }: { type: 'comment' | 'post' }) {
     return type === 'post' ? (
-        <span className="bg-accent-500/10 border-accent-500/20 text-accent-400 inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[10px]">
+        <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-accent-500/20 bg-accent-500/10 px-2 py-0.5 font-mono text-[10px] text-accent-400">
             <FileText className="h-2.5 w-2.5" /> Post
         </span>
     ) : (
@@ -91,7 +91,7 @@ function QueueRow({
                     : 'hover:bg-white/3',
             )}
         >
-            <div className="grid grid-cols-[auto_auto_1fr_auto_auto_auto] items-center gap-4 px-6 py-4">
+            <div className="grid grid-cols-[84px_76px_1fr_112px_76px_92px] items-center gap-4 px-6 py-4">
                 {/* Verdict */}
                 <VerdictBadge verdict={item.verdict} />
 
@@ -123,7 +123,7 @@ function QueueRow({
                 {/* Keep */}
                 <button
                     onClick={onKeep}
-                    className="bg-success/10 border-success/20 text-success hover:bg-success/20 flex shrink-0 items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs transition-colors"
+                    className="flex shrink-0 items-center gap-1.5 rounded-xl border border-success/20 bg-success/10 px-3 py-1.5 text-xs text-success transition-colors hover:bg-success/20"
                 >
                     <CheckCircle className="h-3.5 w-3.5" /> Keep
                 </button>
@@ -131,7 +131,7 @@ function QueueRow({
                 {/* Remove */}
                 <button
                     onClick={onRemove}
-                    className="bg-danger/10 border-danger/20 text-danger hover:bg-danger/20 flex shrink-0 items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs transition-colors"
+                    className="flex shrink-0 items-center gap-1.5 rounded-xl border border-danger/20 bg-danger/10 px-3 py-1.5 text-xs text-danger transition-colors hover:bg-danger/20"
                 >
                     <Trash2 className="h-3.5 w-3.5" /> Remove
                 </button>
@@ -163,7 +163,7 @@ function QueueRow({
                             {item.flagged_phrases.map((p) => (
                                 <span
                                     key={p}
-                                    className="bg-danger/10 text-danger border-danger/20 rounded border px-2 py-0.5 text-xs"
+                                    className="rounded border border-danger/20 bg-danger/10 px-2 py-0.5 text-xs text-danger"
                                 >
                                     &ldquo;{p}&rdquo;
                                 </span>
@@ -265,11 +265,11 @@ export default function QueueIndex({
                             'flex items-center gap-2 rounded-xl border px-4 py-2 text-sm transition-all',
                             filters.verdict === 'remove' &&
                                 !filters.content_type
-                                ? 'bg-danger/20 border-danger/30 text-danger'
+                                ? 'border-danger/30 bg-danger/20 text-danger'
                                 : inactiveClass,
                         )}
                     >
-                        <span className="bg-danger h-2 w-2 rounded-full" />
+                        <span className="h-2 w-2 rounded-full bg-danger" />
                         {pendingCounts.remove} to remove
                     </Link>
 
@@ -282,11 +282,11 @@ export default function QueueIndex({
                             'flex items-center gap-2 rounded-xl border px-4 py-2 text-sm transition-all',
                             filters.verdict === 'review' &&
                                 !filters.content_type
-                                ? 'bg-warning/20 border-warning/30 text-warning'
+                                ? 'border-warning/30 bg-warning/20 text-warning'
                                 : inactiveClass,
                         )}
                     >
-                        <span className="bg-warning h-2 w-2 rounded-full" />
+                        <span className="h-2 w-2 rounded-full bg-warning" />
                         {pendingCounts.review} to review
                     </Link>
 
@@ -349,7 +349,7 @@ export default function QueueIndex({
 
                 {/* Queue table */}
                 <div className="glass overflow-hidden rounded-2xl">
-                    <div className="grid grid-cols-[auto_auto_1fr_auto_auto_auto] gap-4 border-b border-white/8 px-6 py-3 font-mono text-xs tracking-widest text-white/25 uppercase">
+                    <div className="grid grid-cols-[84px_76px_1fr_112px_76px_92px] gap-4 border-b border-white/8 px-6 py-3 font-mono text-xs tracking-widest text-white/25 uppercase">
                         <span>Verdict</span>
                         <span>Type</span>
                         <span>Content</span>

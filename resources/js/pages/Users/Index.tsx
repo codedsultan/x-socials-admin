@@ -30,7 +30,7 @@ export default function UsersIndex({ users, meta, page }: Props) {
 
                 {/* Table */}
                 <div className="glass overflow-hidden rounded-2xl">
-                    <div className="grid grid-cols-[1fr_1fr_auto_auto] gap-4 border-b border-white/8 px-6 py-3 font-mono text-xs tracking-widest text-white/30 uppercase">
+                    <div className="grid grid-cols-[1fr_1fr_104px_56px] gap-4 border-b border-white/8 px-6 py-3 font-mono text-xs tracking-widest text-white/30 uppercase">
                         <span>User</span>
                         <span>Email</span>
                         <span>Joined</span>
@@ -47,11 +47,11 @@ export default function UsersIndex({ users, meta, page }: Props) {
                             {users.map((user) => (
                                 <div
                                     key={user.id}
-                                    className="group grid grid-cols-[1fr_1fr_auto_auto] items-center gap-4 px-6 py-4 transition-colors hover:bg-white/3"
+                                    className="group grid grid-cols-[1fr_1fr_104px_56px] items-center gap-4 px-6 py-4 transition-colors hover:bg-white/3"
                                 >
                                     <div className="flex min-w-0 items-center gap-3">
-                                        <div className="bg-accent-500/20 border-accent-500/30 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border">
-                                            <span className="text-accent-400 text-xs font-bold">
+                                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-accent-500/30 bg-accent-500/20">
+                                            <span className="text-xs font-bold text-accent-400">
                                                 {(user.name ??
                                                     user.email ??
                                                     '?')[0]?.toUpperCase()}
@@ -77,7 +77,7 @@ export default function UsersIndex({ users, meta, page }: Props) {
 
                                     <Link
                                         href={`/users/${user.id}`}
-                                        className="text-accent-400 hover:text-accent-300 flex items-center gap-1 text-xs opacity-0 transition-all group-hover:opacity-100"
+                                        className="hover:text-accent-300 flex items-center gap-1 text-xs text-accent-400 opacity-0 transition-all group-hover:opacity-100"
                                     >
                                         View{' '}
                                         <ExternalLink className="h-3 w-3" />

@@ -10,7 +10,9 @@ use Illuminate\Http\Request;
 
 class ScanController extends Controller
 {
-    public function __construct(private readonly ModeratorService $moderator) {}
+    public function __construct(private readonly ModeratorService $moderator)
+    {
+    }
 
     public function trigger(Request $request): RedirectResponse
     {

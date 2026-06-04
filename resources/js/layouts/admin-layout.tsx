@@ -5,6 +5,7 @@ import {
     FileText,
     LayoutDashboard,
     MailOpen,
+    ScanLine,
     ScrollText,
     ShieldAlert,
     UserCog,
@@ -33,6 +34,7 @@ import audit from '@/routes/audit';
 import moderation from '@/routes/moderation';
 import posts from '@/routes/posts';
 import queue from '@/routes/queue';
+import scans from '@/routes/scans';
 import users from '@/routes/users';
 import type { NavItem, PageProps } from '@/types';
 
@@ -42,6 +44,7 @@ const adminNavItems: NavItem[] = [
     { title: 'Posts', href: posts.index(), icon: FileText },
     { title: 'Review Queue', href: queue.index(), icon: ClipboardList },
     { title: 'On-demand', href: moderation.index(), icon: ShieldAlert },
+    { title: 'Scan Runs', href: scans.index(), icon: ScanLine },
     { title: 'Audit Log', href: audit.index(), icon: ScrollText },
     { title: 'Invitations', href: adminInvitations.index(), icon: MailOpen },
     { title: 'Admin Team', href: adminTeam.index(), icon: UserCog },

@@ -67,7 +67,7 @@ export default function AuditIndex({ logs, pagination }: Props) {
                 </div>
 
                 <div className="glass overflow-hidden rounded-2xl">
-                    <div className="grid grid-cols-[auto_1fr_auto_auto] gap-4 border-b border-white/8 px-6 py-3 font-mono text-xs tracking-widest text-white/25 uppercase">
+                    <div className="grid grid-cols-[140px_1fr_168px_96px] gap-4 border-b border-white/8 px-6 py-3 font-mono text-xs tracking-widest text-white/25 uppercase">
                         <span>Action</span>
                         <span>Target</span>
                         <span>Admin</span>
@@ -92,7 +92,7 @@ export default function AuditIndex({ logs, pagination }: Props) {
                                 return (
                                     <div
                                         key={log.id}
-                                        className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-4 px-6 py-3.5 transition-colors hover:bg-white/3"
+                                        className="grid grid-cols-[140px_1fr_168px_96px] items-center gap-4 px-6 py-3.5 transition-colors hover:bg-white/3"
                                     >
                                         <span
                                             className={cn(

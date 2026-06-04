@@ -118,17 +118,26 @@ export function EmptyState({ icon, title, message, action }: EmptyStateProps) {
 
 export function ConfidenceBar({ value, verdict }: { value: number; verdict: ModerationVerdict }) {
     const pct = Math.round(value * 100);
-    const colors = { safe: 'bg-success', review: 'bg-warning', remove: 'bg-danger' };
+
+    const gradients = {
+        safe:   'linear-gradient(to right, color-mix(in oklch, var(--color-success) 50%, transparent), var(--color-success))',
+        review: 'linear-gradient(to right, color-mix(in oklch, var(--color-warning) 50%, transparent), var(--color-warning))',
+        remove: 'linear-gradient(to right, color-mix(in oklch, var(--color-danger)  50%, transparent), var(--color-danger))',
+    };
+
+    const pctColors = { safe: 'text-success', review: 'text-warning', remove: 'text-danger' };
 
     return (
         <div className="flex items-center gap-2">
-            <div className="flex-1 h-1.5 bg-white/8 rounded-full overflow-hidden">
+            <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/8">
                 <div
-                    className={cn('h-full rounded-full transition-all duration-700', colors[verdict])}
-                    style={{ width: `${pct}%` }}
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{ width: `${pct}%`, background: gradients[verdict] }}
                 />
             </div>
-            <span className="text-xs font-mono text-white/40 w-9 text-right">{pct}%</span>
+            <span className={cn('w-9 text-right font-mono text-xs', pctColors[verdict])}>
+                {pct}%
+            </span>
         </div>
     );
 }

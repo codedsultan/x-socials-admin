@@ -28,7 +28,7 @@ class AutoRemoveCommand extends Command
     public function handle(): int
     {
         $threshold = (float) ($this->option('threshold')
-            ?? config('services.moderation.auto_enforce_threshold', 0.95));
+            ?? config('services.moderation.auto_enforce_threshold', 0.75));
 
         $dryRun = (bool) $this->option('dry-run');
 

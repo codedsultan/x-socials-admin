@@ -75,7 +75,7 @@ function SourceBadge({ result }: { result: ModerationResult }) {
     }
 
     return (
-        <span className="bg-accent-500/10 border-accent-500/20 text-accent-400 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[10px]">
+        <span className="inline-flex items-center gap-1 rounded-full border border-accent-500/20 bg-accent-500/10 px-2 py-0.5 font-mono text-[10px] text-accent-400">
             <Zap className="h-2.5 w-2.5" />
             Live
         </span>
@@ -199,9 +199,9 @@ function AnalysisModal({
                 <div className="flex items-center justify-between border-b border-white/8 px-6 py-4">
                     <div className="flex items-center gap-2.5">
                         {contentType === 'post' ? (
-                            <FileText className="text-accent-400 h-4.5 w-4.5" />
+                            <FileText className="h-4.5 w-4.5 text-accent-400" />
                         ) : (
-                            <ShieldAlert className="text-accent-400 h-4.5 w-4.5" />
+                            <ShieldAlert className="h-4.5 w-4.5 text-accent-400" />
                         )}
                         <span className="font-display text-sm font-semibold text-white/90">
                             {label} Analysis
@@ -235,7 +235,7 @@ function AnalysisModal({
                     {/* AI analysis result */}
                     {analysing ? (
                         <div className="space-y-3">
-                            <div className="text-accent-400 flex items-center gap-2 text-xs">
+                            <div className="flex items-center gap-2 text-xs text-accent-400">
                                 <Zap className="h-3.5 w-3.5 animate-pulse" />
                                 {forceModel
                                     ? `Re-analysing with ${forceModel}…`
@@ -299,8 +299,8 @@ function AnalysisModal({
                             )}
 
                             {analysis.flaggedPhrases.length > 0 && (
-                                <div className="bg-danger/8 border-danger/20 rounded-xl border px-4 py-3">
-                                    <p className="text-danger/60 mb-2 flex items-center gap-1.5 font-mono text-xs tracking-wider uppercase">
+                                <div className="rounded-xl border border-danger/20 bg-danger/8 px-4 py-3">
+                                    <p className="mb-2 flex items-center gap-1.5 font-mono text-xs tracking-wider text-danger/60 uppercase">
                                         <AlertTriangle className="h-3 w-3" />{' '}
                                         Flagged phrases
                                     </p>
@@ -308,7 +308,7 @@ function AnalysisModal({
                                         {analysis.flaggedPhrases.map((p) => (
                                             <span
                                                 key={p}
-                                                className="bg-danger/10 text-danger border-danger/20 rounded border px-2 py-0.5 text-xs"
+                                                className="rounded border border-danger/20 bg-danger/10 px-2 py-0.5 text-xs text-danger"
                                             >
                                                 &ldquo;{p}&rdquo;
                                             </span>
@@ -344,7 +344,7 @@ function AnalysisModal({
                                                     e.target.value || null,
                                                 )
                                             }
-                                            className="focus:border-accent-500/50 flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 font-mono text-xs text-white/60 focus:outline-none"
+                                            className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 font-mono text-xs text-white/60 focus:border-accent-500/50 focus:outline-none"
                                         >
                                             <option value="">
                                                 Re-analyse with…
@@ -366,7 +366,7 @@ function AnalysisModal({
                                                 )
                                             }
                                             disabled={analysing}
-                                            className="bg-accent-500/10 border-accent-500/20 text-accent-400 hover:bg-accent-500/20 flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs transition-colors disabled:opacity-40"
+                                            className="flex items-center gap-1.5 rounded-lg border border-accent-500/20 bg-accent-500/10 px-3 py-1.5 text-xs text-accent-400 transition-colors hover:bg-accent-500/20 disabled:opacity-40"
                                         >
                                             <RefreshCw className="h-3 w-3" />
                                             Re-analyse
@@ -389,7 +389,7 @@ function AnalysisModal({
                         onClick={onClose}
                         className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm text-white/50 transition-colors hover:bg-white/5 hover:text-white/80"
                     >
-                        <CheckCircle className="text-success h-4 w-4" /> Keep{' '}
+                        <CheckCircle className="h-4 w-4 text-success" /> Keep{' '}
                         {label.toLowerCase()}
                     </button>
                     <button
@@ -397,7 +397,7 @@ function AnalysisModal({
                             onDelete(contentId, contentType);
                             onClose();
                         }}
-                        className="bg-danger/15 border-danger/25 text-danger hover:bg-danger/25 flex items-center gap-1.5 rounded-xl border px-4 py-2 text-sm transition-colors"
+                        className="flex items-center gap-1.5 rounded-xl border border-danger/25 bg-danger/15 px-4 py-2 text-sm text-danger transition-colors hover:bg-danger/25"
                     >
                         <Trash2 className="h-4 w-4" /> Remove{' '}
                         {label.toLowerCase()}
@@ -472,12 +472,12 @@ export default function ModerationIndex({
                     </div>
                     {(post || comments.length > 0) && (
                         <div className="flex shrink-0 flex-wrap gap-3 font-mono text-xs">
-                            <span className="bg-danger/10 border-danger/20 text-danger flex items-center gap-1.5 rounded-xl border px-3 py-1.5">
-                                <span className="bg-danger h-1.5 w-1.5 rounded-full" />{' '}
+                            <span className="flex items-center gap-1.5 rounded-xl border border-danger/20 bg-danger/10 px-3 py-1.5 text-danger">
+                                <span className="h-1.5 w-1.5 rounded-full bg-danger" />{' '}
                                 {flagCount} to remove
                             </span>
-                            <span className="bg-warning/10 border-warning/20 text-warning flex items-center gap-1.5 rounded-xl border px-3 py-1.5">
-                                <span className="bg-warning h-1.5 w-1.5 rounded-full" />{' '}
+                            <span className="flex items-center gap-1.5 rounded-xl border border-warning/20 bg-warning/10 px-3 py-1.5 text-warning">
+                                <span className="h-1.5 w-1.5 rounded-full bg-warning" />{' '}
                                 {reviewCount} to review
                             </span>
                             {/* [Fix 5] Show pending count when background scan hasn't reached some content */}
@@ -499,12 +499,12 @@ export default function ModerationIndex({
                             value={postIdInput}
                             onChange={(e) => setPostIdInput(e.target.value)}
                             placeholder="Paste a Post ObjectId (MongoDB)…"
-                            className="focus:border-accent-500/50 w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pr-3 pl-8 font-mono text-sm text-white/80 placeholder:text-white/20 focus:outline-none"
+                            className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pr-3 pl-8 font-mono text-sm text-white/80 placeholder:text-white/20 focus:border-accent-500/50 focus:outline-none"
                         />
                     </div>
                     <button
                         type="submit"
-                        className="bg-accent-500/15 border-accent-500/25 text-accent-400 hover:bg-accent-500/25 flex items-center gap-1.5 rounded-xl border px-4 py-2.5 text-sm transition-colors"
+                        className="flex items-center gap-1.5 rounded-xl border border-accent-500/25 bg-accent-500/15 px-4 py-2.5 text-sm text-accent-400 transition-colors hover:bg-accent-500/25"
                     >
                         <Zap className="h-3.5 w-3.5" /> Load
                     </button>
@@ -513,7 +513,7 @@ export default function ModerationIndex({
                 {/* Results table */}
                 {postId && (
                     <div className="glass overflow-hidden rounded-2xl">
-                        <div className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-4 border-b border-white/8 px-6 py-3 font-mono text-xs tracking-widest text-white/30 uppercase">
+                        <div className="grid grid-cols-[80px_1fr_84px_112px_36px] gap-4 border-b border-white/8 px-6 py-3 font-mono text-xs tracking-widest text-white/30 uppercase">
                             <span>Type</span>
                             <span>Content</span>
                             <span>Verdict</span>
@@ -532,7 +532,7 @@ export default function ModerationIndex({
                                     <div
                                         key={post.id}
                                         className={cn(
-                                            'grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-4 px-6 py-4',
+                                            'grid grid-cols-[80px_1fr_84px_112px_36px] items-center gap-4 px-6 py-4',
                                             'group cursor-pointer border-b border-white/5 transition-colors',
                                             verdict === 'remove'
                                                 ? 'bg-danger/5 hover:bg-danger/10'
@@ -550,7 +550,7 @@ export default function ModerationIndex({
                                             })
                                         }
                                     >
-                                        <span className="bg-accent-500/10 border-accent-500/20 text-accent-400 inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[10px]">
+                                        <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-accent-500/20 bg-accent-500/10 px-2 py-0.5 font-mono text-[10px] text-accent-400">
                                             <FileText className="h-2.5 w-2.5" />{' '}
                                             Post
                                         </span>
@@ -599,7 +599,7 @@ export default function ModerationIndex({
                                                         'post',
                                                     )
                                                 }
-                                                className="hover:bg-danger/15 hover:text-danger rounded-lg p-1.5 text-white/25 opacity-0 transition-all group-hover:opacity-100"
+                                                className="rounded-lg p-1.5 text-white/25 opacity-0 transition-all group-hover:opacity-100 hover:bg-danger/15 hover:text-danger"
                                                 title="Delete post"
                                             >
                                                 <Trash2 className="h-3.5 w-3.5" />
@@ -630,7 +630,7 @@ export default function ModerationIndex({
                                         <div
                                             key={comment.id}
                                             className={cn(
-                                                'grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-4 px-6 py-4',
+                                                'grid grid-cols-[80px_1fr_84px_112px_36px] items-center gap-4 px-6 py-4',
                                                 'group cursor-pointer transition-colors',
                                                 verdict === 'remove'
                                                     ? 'bg-danger/5 hover:bg-danger/10'
@@ -706,7 +706,7 @@ export default function ModerationIndex({
                                                             'comment',
                                                         )
                                                     }
-                                                    className="hover:bg-danger/15 hover:text-danger rounded-lg p-1.5 text-white/25 opacity-0 transition-all group-hover:opacity-100"
+                                                    className="rounded-lg p-1.5 text-white/25 opacity-0 transition-all group-hover:opacity-100 hover:bg-danger/15 hover:text-danger"
                                                     title="Delete comment"
                                                 >
                                                     <Trash2 className="h-3.5 w-3.5" />
@@ -723,8 +723,8 @@ export default function ModerationIndex({
                 {/* Empty state when no post entered */}
                 {!postId && (
                     <div className="glass flex flex-col items-center gap-4 rounded-2xl py-20 text-center">
-                        <div className="bg-accent-500/10 border-accent-500/20 flex h-14 w-14 items-center justify-center rounded-2xl border">
-                            <ShieldAlert className="text-accent-400/50 h-7 w-7" />
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-accent-500/20 bg-accent-500/10">
+                            <ShieldAlert className="h-7 w-7 text-accent-400/50" />
                         </div>
                         <div>
                             <p className="font-medium text-white/50">

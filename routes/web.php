@@ -13,6 +13,7 @@ use App\Http\Controllers\PostsController;
 use App\Http\Controllers\QueueController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\UsersController;
+use App\Http\Controllers\ScanRunsController;
 use Illuminate\Support\Facades\Route;
 
 // ── Public invitation routes ──────────────────────────────────────────────────
@@ -33,6 +34,11 @@ Route::middleware('auth')->group(function () {
     // Manual scan triggers — delegate to FastAPI
     Route::post('/scan/trigger', [ScanController::class, 'trigger'])->name('scan.trigger');
     Route::post('/scan/trigger/{postId}', [ScanController::class, 'triggerPost'])->name('scan.trigger.post');
+
+    Route::prefix('scans')->name('scans.')->group(function () {
+        Route::get('/', [ScanRunsController::class, 'index'])  ->name('index');
+        Route::post('/trigger', [ScanRunsController::class, 'trigger'])->name('trigger');
+    });
 
     // Users (read from Node.js API via admin key)
     Route::prefix('users')->name('users.')->group(function () {

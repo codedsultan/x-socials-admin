@@ -72,8 +72,8 @@ function RoleBadge({ role }: { role: string }) {
 
 function Avatar({ name }: { name: string }) {
     return (
-        <div className="bg-accent-500/20 border-accent-500/30 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border">
-            <span className="text-accent-400 text-xs font-bold">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-accent-500/30 bg-accent-500/20">
+            <span className="text-xs font-bold text-accent-400">
                 {name[0]?.toUpperCase()}
             </span>
         </div>
@@ -82,8 +82,8 @@ function Avatar({ name }: { name: string }) {
 
 function formatDate(iso: string | null) {
     if (!iso) {
-return '—';
-}
+        return '—';
+    }
 
     return new Date(iso).toLocaleDateString(undefined, {
         year: 'numeric',
@@ -112,14 +112,14 @@ export default function TeamIndex({ members, available_roles }: Props) {
 
     function closeModal() {
         if (!processing) {
-setModal(null);
-}
+            setModal(null);
+        }
     }
 
     function saveRole() {
         if (modal?.type !== 'edit-role' || !selectedRole) {
-return;
-}
+            return;
+        }
 
         setProcessing(true);
         router.patch(
@@ -145,8 +145,8 @@ return;
 
     function confirmDelete() {
         if (modal?.type !== 'delete') {
-return;
-}
+            return;
+        }
 
         setProcessing(true);
         router.delete(adminTeam.destroy(modal.member.id).url, {
@@ -172,7 +172,7 @@ return;
                 </div>
 
                 <div className="glass overflow-hidden rounded-2xl">
-                    <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 border-b border-white/8 px-6 py-3 font-mono text-xs tracking-widest text-white/30 uppercase">
+                    <div className="grid grid-cols-[1fr_96px_96px_96px_36px] gap-4 border-b border-white/8 px-6 py-3 font-mono text-xs tracking-widest text-white/30 uppercase">
                         <span>Member</span>
                         <span>Role</span>
                         <span>Status</span>
@@ -195,7 +195,7 @@ return;
                                 return (
                                     <div
                                         key={member.id}
-                                        className="grid grid-cols-[1fr_auto_auto_auto_auto] items-center gap-4 px-6 py-4"
+                                        className="grid grid-cols-[1fr_96px_96px_96px_36px] items-center gap-4 px-6 py-4"
                                     >
                                         {/* Identity */}
                                         <div className="flex min-w-0 items-center gap-3">

@@ -67,12 +67,12 @@ export default function PostsIndex({ posts, meta, page, filters }: Props) {
                                 value={tagInput}
                                 onChange={(e) => setTagInput(e.target.value)}
                                 placeholder="Filter by tag…"
-                                className="focus:border-accent-500/50 w-44 rounded-xl border border-white/10 bg-white/5 py-2 pr-3 pl-8 text-sm text-white/80 placeholder:text-white/25 focus:outline-none"
+                                className="w-44 rounded-xl border border-white/10 bg-white/5 py-2 pr-3 pl-8 text-sm text-white/80 placeholder:text-white/25 focus:border-accent-500/50 focus:outline-none"
                             />
                         </div>
                         <button
                             type="submit"
-                            className="bg-accent-500/15 text-accent-400 border-accent-500/25 hover:bg-accent-500/25 rounded-xl border px-3 py-2 text-xs transition-colors"
+                            className="rounded-xl border border-accent-500/25 bg-accent-500/15 px-3 py-2 text-xs text-accent-400 transition-colors hover:bg-accent-500/25"
                         >
                             Filter
                         </button>
@@ -88,7 +88,7 @@ export default function PostsIndex({ posts, meta, page, filters }: Props) {
                 </div>
 
                 <div className="glass overflow-hidden rounded-2xl">
-                    <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 border-b border-white/8 px-6 py-3 font-mono text-xs tracking-widest text-white/30 uppercase">
+                    <div className="grid grid-cols-[1fr_140px_60px_104px_60px] gap-4 border-b border-white/8 px-6 py-3 font-mono text-xs tracking-widest text-white/30 uppercase">
                         <span>Post</span>
                         <span>Tags</span>
                         <span>Likes</span>
@@ -106,7 +106,7 @@ export default function PostsIndex({ posts, meta, page, filters }: Props) {
                             {posts.map((post) => (
                                 <div
                                     key={post.id}
-                                    className="group grid grid-cols-[1fr_auto_auto_auto_auto] items-center gap-4 px-6 py-4 transition-colors hover:bg-white/3"
+                                    className="group grid grid-cols-[1fr_140px_60px_104px_60px] items-center gap-4 px-6 py-4 transition-colors hover:bg-white/3"
                                 >
                                     <div className="min-w-0">
                                         <p className="truncate text-sm font-medium text-white/90">
@@ -117,7 +117,7 @@ export default function PostsIndex({ posts, meta, page, filters }: Props) {
                                         </p>
                                     </div>
 
-                                    <div className="flex flex-wrap justify-end gap-1">
+                                    <div className="flex items-center justify-end gap-1">
                                         {post.tags.slice(0, 2).map((t) => (
                                             <Badge key={t} variant="accent">
                                                 #{t}
@@ -149,7 +149,7 @@ export default function PostsIndex({ posts, meta, page, filters }: Props) {
                                         </Link>
                                         <button
                                             onClick={() => deletePost(post.id)}
-                                            className="hover:bg-danger/15 hover:text-danger rounded-lg p-1.5 text-white/30 transition-colors"
+                                            className="rounded-lg p-1.5 text-white/30 transition-colors hover:bg-danger/15 hover:text-danger"
                                             title="Delete"
                                         >
                                             <Trash2 className="h-3.5 w-3.5" />
