@@ -1,5 +1,6 @@
 import { Link, router } from '@inertiajs/react';
-import { Check, Clock, MailOpen, Send, X } from 'lucide-react';
+import { Check, Clock, Loader2, MailOpen, Send, X } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import AdminLayout from '@/layouts/admin-layout';
 import adminInvitationRequests from '@/routes/admin/invitation-requests';
@@ -52,19 +53,40 @@ function StatusBadge({ status }: { status: InvitationRequest['status'] }) {
 }
 
 export default function InvitationRequestsIndex({ requests }: Props) {
+    const [processingId, setProcessingId] = useState<number | null>(null);
+    const [pendingAction, setPendingAction] = useState<
+        'approve' | 'reject' | null
+    >(null);
+
     function approve(id: number) {
+        setPendingAction('approve');
+        setProcessingId(id);
         router.post(
             adminInvitationRequests.approve(id),
             {},
-            { preserveScroll: true },
+            {
+                preserveScroll: true,
+                onFinish: () => {
+                    setProcessingId(null);
+                    setPendingAction(null);
+                },
+            },
         );
     }
 
     function reject(id: number) {
+        setPendingAction('reject');
+        setProcessingId(id);
         router.post(
             adminInvitationRequests.reject(id),
             {},
-            { preserveScroll: true },
+            {
+                preserveScroll: true,
+                onFinish: () => {
+                    setProcessingId(null);
+                    setPendingAction(null);
+                },
+            },
         );
     }
 
@@ -165,22 +187,44 @@ export default function InvitationRequestsIndex({ requests }: Props) {
                                                         size="sm"
                                                         variant="outline"
                                                         className="h-7 gap-1 border-emerald-600/30 text-emerald-600 hover:bg-emerald-500/10"
+                                                        disabled={
+                                                            processingId ===
+                                                            req.id
+                                                        }
                                                         onClick={() =>
                                                             approve(req.id)
                                                         }
                                                     >
-                                                        <Check className="h-3 w-3" />
+                                                        {processingId ===
+                                                            req.id &&
+                                                        pendingAction ===
+                                                            'approve' ? (
+                                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                                        ) : (
+                                                            <Check className="h-3 w-3" />
+                                                        )}
                                                         Approve
                                                     </Button>
                                                     <Button
                                                         size="sm"
                                                         variant="outline"
                                                         className="h-7 gap-1 border-red-500/30 text-red-500 hover:bg-red-500/10"
+                                                        disabled={
+                                                            processingId ===
+                                                            req.id
+                                                        }
                                                         onClick={() =>
                                                             reject(req.id)
                                                         }
                                                     >
-                                                        <X className="h-3 w-3" />
+                                                        {processingId ===
+                                                            req.id &&
+                                                        pendingAction ===
+                                                            'reject' ? (
+                                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                                        ) : (
+                                                            <X className="h-3 w-3" />
+                                                        )}
                                                         Reject
                                                     </Button>
                                                 </div>

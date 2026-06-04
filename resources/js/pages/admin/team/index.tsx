@@ -1,5 +1,6 @@
 import { router, usePage } from '@inertiajs/react';
 import {
+    Loader2,
     MoreHorizontal,
     Pencil,
     ShieldAlert,
@@ -104,6 +105,7 @@ export default function TeamIndex({ members, available_roles }: Props) {
     const [modal, setModal] = useState<ModalState>(null);
     const [selectedRole, setSelectedRole] = useState('');
     const [processing, setProcessing] = useState(false);
+    const [suspendingId, setSuspendingId] = useState<number | null>(null);
 
     function openEditRole(member: AdminMember) {
         setSelectedRole(member.roles[0] ?? '');
@@ -136,10 +138,14 @@ export default function TeamIndex({ members, available_roles }: Props) {
     }
 
     function toggleSuspend(member: AdminMember) {
+        setSuspendingId(member.id);
         router.patch(
             adminTeam.update(member.id).url,
             { active: !member.active },
-            { preserveScroll: true },
+            {
+                preserveScroll: true,
+                onFinish: () => setSuspendingId(null),
+            },
         );
     }
 
@@ -280,8 +286,20 @@ export default function TeamIndex({ members, available_roles }: Props) {
                                                     onClick={() =>
                                                         toggleSuspend(member)
                                                     }
+                                                    disabled={
+                                                        suspendingId ===
+                                                        member.id
+                                                    }
                                                 >
-                                                    {member.active ? (
+                                                    {suspendingId ===
+                                                    member.id ? (
+                                                        <>
+                                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                                            {member.active
+                                                                ? 'Suspending…'
+                                                                : 'Reactivating…'}
+                                                        </>
+                                                    ) : member.active ? (
                                                         <>
                                                             <UserMinus className="h-4 w-4" />
                                                             Suspend

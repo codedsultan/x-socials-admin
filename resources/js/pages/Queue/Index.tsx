@@ -5,6 +5,7 @@ import {
     ChevronLeft,
     ChevronRight,
     Clock,
+    Loader2,
     ShieldAlert,
     Filter,
     FileText,
@@ -72,14 +73,19 @@ function ContentTypeBadge({ type }: { type: 'comment' | 'post' }) {
 
 function QueueRow({
     item,
+    processing,
     onKeep,
     onRemove,
 }: {
     item: QueueItem;
+    processing: boolean;
     onKeep: () => void;
     onRemove: () => void;
 }) {
     const [expanded, setExpanded] = useState(false);
+    const [pendingAction, setPendingAction] = useState<
+        'keep' | 'remove' | null
+    >(null);
     const isPost = item.content_type === 'post';
 
     return (
@@ -122,18 +128,36 @@ function QueueRow({
 
                 {/* Keep */}
                 <button
-                    onClick={onKeep}
-                    className="flex shrink-0 items-center gap-1.5 rounded-xl border border-success/20 bg-success/10 px-3 py-1.5 text-xs text-success transition-colors hover:bg-success/20"
+                    onClick={() => {
+                        setPendingAction('keep');
+                        onKeep();
+                    }}
+                    disabled={processing}
+                    className="flex shrink-0 items-center gap-1.5 rounded-xl border border-success/20 bg-success/10 px-3 py-1.5 text-xs text-success transition-colors hover:bg-success/20 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                    <CheckCircle className="h-3.5 w-3.5" /> Keep
+                    {processing && pendingAction === 'keep' ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                        <CheckCircle className="h-3.5 w-3.5" />
+                    )}
+                    Keep
                 </button>
 
                 {/* Remove */}
                 <button
-                    onClick={onRemove}
-                    className="flex shrink-0 items-center gap-1.5 rounded-xl border border-danger/20 bg-danger/10 px-3 py-1.5 text-xs text-danger transition-colors hover:bg-danger/20"
+                    onClick={() => {
+                        setPendingAction('remove');
+                        onRemove();
+                    }}
+                    disabled={processing}
+                    className="flex shrink-0 items-center gap-1.5 rounded-xl border border-danger/20 bg-danger/10 px-3 py-1.5 text-xs text-danger transition-colors hover:bg-danger/20 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                    <Trash2 className="h-3.5 w-3.5" /> Remove
+                    {processing && pendingAction === 'remove' ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                        <Trash2 className="h-3.5 w-3.5" />
+                    )}
+                    Remove
                 </button>
             </div>
 
@@ -193,9 +217,18 @@ export default function QueueIndex({
     lastScan,
 }: Props) {
     const totalPending = pendingCounts.remove + pendingCounts.review;
+    const [processingId, setProcessingId] = useState<number | null>(null);
 
     function keep(id: number) {
-        router.post(`/queue/${id}/keep`, {}, { preserveScroll: true });
+        setProcessingId(id);
+        router.post(
+            `/queue/${id}/keep`,
+            {},
+            {
+                preserveScroll: true,
+                onFinish: () => setProcessingId(null),
+            },
+        );
     }
 
     function remove(id: number, contentType: string) {
@@ -205,7 +238,15 @@ export default function QueueIndex({
             return;
         }
 
-        router.post(`/queue/${id}/remove`, {}, { preserveScroll: true });
+        setProcessingId(id);
+        router.post(
+            `/queue/${id}/remove`,
+            {},
+            {
+                preserveScroll: true,
+                onFinish: () => setProcessingId(null),
+            },
+        );
     }
 
     function filterHref(extra: Record<string, string | undefined>) {
@@ -375,6 +416,7 @@ export default function QueueIndex({
                             <QueueRow
                                 key={item.id}
                                 item={item}
+                                processing={processingId === item.id}
                                 onKeep={() => keep(item.id)}
                                 onRemove={() =>
                                     remove(item.id, item.content_type)

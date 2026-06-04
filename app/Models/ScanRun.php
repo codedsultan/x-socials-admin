@@ -1,10 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
+use App\Enums\ScanRunMode;
 use App\Enums\ScanRunStatus;
+use Database\Factories\ScanRunFactory;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * ScanRun
@@ -19,6 +24,11 @@ use App\Enums\ScanRunStatus;
  */
 class ScanRun extends Model
 {
+    /** @use HasFactory<ScanRunFactory> */
+    use HasFactory;
+
+    public const CREATED_AT = null;
+
     public const UPDATED_AT = null;
 
     protected $fillable = [
@@ -35,7 +45,7 @@ class ScanRun extends Model
     ];
 
     protected $casts = [
-        'started_at'  => 'datetime',
+        'started_at' => 'datetime',
         'finished_at' => 'datetime',
     ];
 
@@ -49,6 +59,7 @@ class ScanRun extends Model
         if (! $this->finished_at) {
             return null;
         }
+
         return (int) $this->started_at->diffInSeconds($this->finished_at);
     }
 
@@ -68,6 +79,7 @@ class ScanRun extends Model
 
         $m = intdiv($secs, 60);
         $s = $secs % 60;
+
         return $s > 0 ? "{$m}m {$s}s" : "{$m}m";
     }
 
@@ -94,10 +106,10 @@ class ScanRun extends Model
     public function statusColour(): string
     {
         return match ($this->status) {
-            'completed' => 'success',
-            'failed'    => 'danger',
-            'running'   => 'accent',
-            default     => 'white',
+            ScanRunStatus::Completed->value => 'success',
+            ScanRunStatus::Failed->value => 'danger',
+            ScanRunStatus::Running->value => 'accent',
+            default => 'white',
         };
     }
 
@@ -105,12 +117,12 @@ class ScanRun extends Model
 
     public function scopeReconciliation(Builder $query): Builder
     {
-        return $query->where('mode', 'reconciliation');
+        return $query->where('mode', ScanRunMode::Reconciliation->value);
     }
 
     public function scopeCompleted(Builder $query): Builder
     {
-        return $query->where('status', 'completed');
+        return $query->where('status', ScanRunStatus::Completed->value);
     }
 
     public function scopeRecent(Builder $query, int $days = 30): Builder
@@ -120,16 +132,15 @@ class ScanRun extends Model
 
     public function scopeFinished(Builder $query): Builder
     {
-        return $query->whereIn('status', [ScanRunStatus::Completed, ScanRunStatus::Failed]);
+        return $query->whereIn('status', [ScanRunStatus::Completed->value, ScanRunStatus::Failed->value]);
     }
-
 
     // ── Mutations (called by ScanController for manual triggers) ──────────────
 
     public function markCompleted(array $counts): void
     {
         $this->update(array_merge($counts, [
-            'status'      => 'completed',
+            'status' => ScanRunStatus::Completed->value,
             'finished_at' => now(),
         ]));
     }
@@ -137,9 +148,9 @@ class ScanRun extends Model
     public function markFailed(string $error): void
     {
         $this->update([
-            'status'        => 'failed',
+            'status' => ScanRunStatus::Failed->value,
             'error_message' => $error,
-            'finished_at'   => now(),
+            'finished_at' => now(),
         ]);
     }
 }

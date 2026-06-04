@@ -6,6 +6,7 @@ import {
     Trash2,
     Eye,
     Heart,
+    Loader2,
     Search,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -23,6 +24,7 @@ interface Props {
 
 export default function PostsIndex({ posts, meta, page, filters }: Props) {
     const [tagInput, setTagInput] = useState(filters.tag ?? '');
+    const [deletingId, setDeletingId] = useState<string | null>(null);
 
     function applyTag(e: React.FormEvent) {
         e.preventDefault();
@@ -38,7 +40,11 @@ export default function PostsIndex({ posts, meta, page, filters }: Props) {
             return;
         }
 
-        router.delete(`/posts/${id}`, { preserveScroll: true });
+        setDeletingId(id);
+        router.delete(`/posts/${id}`, {
+            preserveScroll: true,
+            onFinish: () => setDeletingId(null),
+        });
     }
 
     return (
@@ -149,10 +155,15 @@ export default function PostsIndex({ posts, meta, page, filters }: Props) {
                                         </Link>
                                         <button
                                             onClick={() => deletePost(post.id)}
-                                            className="rounded-lg p-1.5 text-white/30 transition-colors hover:bg-danger/15 hover:text-danger"
+                                            disabled={deletingId === post.id}
+                                            className="rounded-lg p-1.5 text-white/30 transition-colors hover:bg-danger/15 hover:text-danger disabled:cursor-not-allowed disabled:opacity-50"
                                             title="Delete"
                                         >
-                                            <Trash2 className="h-3.5 w-3.5" />
+                                            {deletingId === post.id ? (
+                                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                            ) : (
+                                                <Trash2 className="h-3.5 w-3.5" />
+                                            )}
                                         </button>
                                     </div>
                                 </div>

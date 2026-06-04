@@ -57,7 +57,7 @@ class ModerationRecord extends Model
 
     public function scopeComments(Builder $query): Builder
     {
-        return $query->where('content_type', ContentType::Comment);
+        return $query->where('content_type', ContentType::Comment->value);
     }
 
     public function scopeRecentDays(Builder $query, int $days): Builder

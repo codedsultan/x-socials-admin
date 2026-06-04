@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\ModerationStatus;
 use App\Models\ModerationQueue;
 use App\Models\ModerationRecord;
 use App\Models\ScanRun;
@@ -50,11 +51,24 @@ class DashboardService
             ->get()
             ->mapWithKeys(fn ($row) => [$row->verdict->value => (int) $row->cnt]);
 
+        $todayCounts = ModerationQueue::query()
+            ->whereDate('resolved_at', today())
+            ->whereIn('status', [
+                ModerationStatus::Reviewed->value,
+                ModerationStatus::Removed->value,
+                ModerationStatus::AutoRemoved->value,
+            ])
+            ->selectRaw('status, COUNT(*) as cnt')
+            ->groupBy('status')
+            ->get()
+            ->mapWithKeys(fn ($row) => [$row->status->value => (int) $row->cnt]);
+
         return [
             'pendingRemove' => $verdictCounts->get('remove', 0),
             'pendingReview' => $verdictCounts->get('review', 0),
-            'resolvedToday' => ModerationQueue::resolved()->whereDate('resolved_at', today())->count(),
-            'autoRemovedToday' => ModerationQueue::autoRemoved()->whereDate('resolved_at', today())->count(),
+            'resolvedToday' => $todayCounts->get(ModerationStatus::Reviewed->value, 0)
+                + $todayCounts->get(ModerationStatus::Removed->value, 0),
+            'autoRemovedToday' => $todayCounts->get(ModerationStatus::AutoRemoved->value, 0),
         ];
     }
 
@@ -74,6 +88,6 @@ class DashboardService
 
     public function lastScan(): ?ScanRun
     {
-        return ScanRun::finished()->latest('started_at')->first();
+        return ScanRun::reconciliation()->finished()->latest('started_at')->first();
     }
 }

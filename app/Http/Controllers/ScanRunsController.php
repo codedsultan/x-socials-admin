@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Models\ScanRun;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Http;
-use App\Models\ScanRun;
 
 /**
  * ScanRunsController
@@ -24,30 +26,30 @@ class ScanRunsController extends Controller
     public function index(Request $request): Response
     {
         $status = $request->query('status');   // running | completed | failed
-        $mode   = $request->query('mode');     // reconciliation | standard | manual
+        $mode = $request->query('mode');     // reconciliation | standard | manual
 
         // ── Paginated scan run history ─────────────────────────────────────
         $runs = ScanRun::query()
             ->when($status, fn ($q) => $q->where('status', $status))
-            ->when($mode,   fn ($q) => $q->where('mode', $mode))
+            ->when($mode, fn ($q) => $q->where('mode', $mode))
             ->orderBy('started_at', 'desc')
             ->paginate(20)
             ->through(fn (ScanRun $run) => [
-                'id'               => $run->id,
-                'status'           => $run->status,
-                'statusColour'     => $run->statusColour(),
-                'mode'             => $run->mode ?? 'reconciliation',
-                'posts_scanned'    => $run->posts_scanned,
+                'id' => $run->id,
+                'status' => $run->status,
+                'statusColour' => $run->statusColour(),
+                'mode' => $run->mode ?? 'reconciliation',
+                'posts_scanned' => $run->posts_scanned,
                 'comments_scanned' => $run->comments_scanned,
-                'total_scanned'    => $run->totalScanned(),
-                'flagged'          => $run->flagged,
-                'queued_for_review'=> $run->queued_for_review,
-                'total_flagged'    => $run->totalFlagged(),
-                'safe'             => $run->safe,
-                'duration'         => $run->durationForHumans(),
-                'error_message'    => $run->error_message,
-                'started_at'       => $run->started_at?->toISOString(),
-                'finished_at'      => $run->finished_at?->toISOString(),
+                'total_scanned' => $run->totalScanned(),
+                'flagged' => $run->flagged,
+                'queued_for_review' => $run->queued_for_review,
+                'total_flagged' => $run->totalFlagged(),
+                'safe' => $run->safe,
+                'duration' => $run->durationForHumans(),
+                'error_message' => $run->error_message,
+                'started_at' => $run->started_at?->toISOString(),
+                'finished_at' => $run->finished_at?->toISOString(),
             ]);
 
         // ── Summary stats for the header cards ────────────────────────────
@@ -77,23 +79,23 @@ class ScanRunsController extends Controller
             ->first();
 
         return Inertia::render('Scans/Index', [
-            'runs'               => $runs,
-            'filters'            => compact('status', 'mode'),
-            'summary'            => [
-                'total_runs'             => (int) ($summary->total_runs         ?? 0),
-                'completed'              => (int) ($summary->completed          ?? 0),
-                'failed'                 => (int) ($summary->failed             ?? 0),
-                'running'                => (int) ($summary->running            ?? 0),
-                'reconciliation_runs'    => (int) ($summary->reconciliation_runs ?? 0),
+            'runs' => $runs,
+            'filters' => compact('status', 'mode'),
+            'summary' => [
+                'total_runs' => (int) ($summary->total_runs ?? 0),
+                'completed' => (int) ($summary->completed ?? 0),
+                'failed' => (int) ($summary->failed ?? 0),
+                'running' => (int) ($summary->running ?? 0),
+                'reconciliation_runs' => (int) ($summary->reconciliation_runs ?? 0),
                 'total_comments_scanned' => (int) ($summary->total_comments_scanned ?? 0),
-                'total_flagged'          => (int) ($summary->total_flagged      ?? 0),
-                'avg_duration_seconds'   => (int) round($summary->avg_duration_seconds ?? 0),
+                'total_flagged' => (int) ($summary->total_flagged ?? 0),
+                'avg_duration_seconds' => (int) round($summary->avg_duration_seconds ?? 0),
             ],
             'lastReconciliation' => $lastReconciliation ? [
-                'started_at'       => $lastReconciliation->started_at?->toISOString(),
+                'started_at' => $lastReconciliation->started_at?->toISOString(),
                 'comments_scanned' => $lastReconciliation->comments_scanned,
-                'flagged'          => $lastReconciliation->totalFlagged(),
-                'duration'         => $lastReconciliation->durationForHumans(),
+                'flagged' => $lastReconciliation->totalFlagged(),
+                'duration' => $lastReconciliation->durationForHumans(),
             ] : null,
         ]);
     }
@@ -118,6 +120,7 @@ class ScanRunsController extends Controller
             }
 
             $runId = $response->json('scan_run_id');
+
             return back()->with('success',
                 "Scan started (run_id={$runId}, mode={$mode}). Results appear here as it completes."
             );

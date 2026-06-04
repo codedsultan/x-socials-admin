@@ -104,10 +104,12 @@ class DashboardServiceTest extends TestCase
         $this->assertArrayNotHasKey('auto', $breakdown);
     }
 
-    public function test_last_scan_returns_most_recent_finished_scan(): void
+    public function test_last_scan_returns_most_recent_finished_reconciliation_scan(): void
     {
-        ScanRun::factory()->create(['status' => ScanRunStatus::Completed, 'started_at' => now()->subHour()]);
-        $latest = ScanRun::factory()->create(['status' => ScanRunStatus::Completed, 'started_at' => now()]);
+        ScanRun::factory()->create(['status' => ScanRunStatus::Completed, 'mode' => 'reconciliation', 'started_at' => now()->subHour()]);
+        $latest = ScanRun::factory()->create(['status' => ScanRunStatus::Completed, 'mode' => 'reconciliation', 'started_at' => now()]);
+        // Non-reconciliation scan should be excluded
+        ScanRun::factory()->create(['status' => ScanRunStatus::Completed, 'mode' => 'manual', 'started_at' => now()->addMinute()]);
 
         $scan = $this->service->lastScan();
 

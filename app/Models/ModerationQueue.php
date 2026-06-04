@@ -56,32 +56,32 @@ class ModerationQueue extends Model
 
     public function scopePending(Builder $query): Builder
     {
-        return $query->where('status', ModerationStatus::Pending);
+        return $query->where('status', ModerationStatus::Pending->value);
     }
 
     public function scopeByStatus(Builder $query, ModerationStatus $status): Builder
     {
-        return $query->where('status', $status);
+        return $query->where('status', $status->value);
     }
 
     public function scopeByVerdict(Builder $query, ModerationVerdict $verdict): Builder
     {
-        return $query->where('verdict', $verdict);
+        return $query->where('verdict', $verdict->value);
     }
 
     public function scopeByContentType(Builder $query, ContentType $type): Builder
     {
-        return $query->where('content_type', $type);
+        return $query->where('content_type', $type->value);
     }
 
     public function scopeResolved(Builder $query): Builder
     {
-        return $query->whereIn('status', [ModerationStatus::Reviewed, ModerationStatus::Removed]);
+        return $query->whereIn('status', [ModerationStatus::Reviewed->value, ModerationStatus::Removed->value]);
     }
 
     public function scopeAutoRemoved(Builder $query): Builder
     {
-        return $query->where('status', ModerationStatus::AutoRemoved);
+        return $query->where('status', ModerationStatus::AutoRemoved->value);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -104,7 +104,7 @@ class ModerationQueue extends Model
     public function resolve(int $adminId, ModerationStatus $status, ?string $note = null): void
     {
         $this->update([
-            'status' => $status,
+            'status' => $status->value,
             'resolved_by' => $adminId,
             'resolved_at' => now(),
             'resolution_note' => $note,
@@ -114,7 +114,7 @@ class ModerationQueue extends Model
     public function autoRemove(string $note): void
     {
         $this->update([
-            'status' => ModerationStatus::AutoRemoved,
+            'status' => ModerationStatus::AutoRemoved->value,
             'resolved_by' => null,
             'resolved_at' => now(),
             'resolution_note' => $note,

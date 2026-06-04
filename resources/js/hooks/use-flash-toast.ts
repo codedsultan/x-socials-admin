@@ -7,13 +7,19 @@ export function useFlashToast(): void {
     useEffect(() => {
         return router.on('flash', (event) => {
             const flash = (event as CustomEvent).detail?.flash;
-            const data = flash?.toast as FlashToast | undefined;
+            const toastData = flash?.toast as FlashToast | undefined;
 
-            if (!data) {
+            if (toastData) {
+                toast[toastData.type](toastData.message);
+
                 return;
             }
 
-            toast[data.type](data.message);
+            if (flash?.success) {
+                toast.success(flash.success);
+            } else if (flash?.error) {
+                toast.error(flash.error);
+            }
         });
     }, []);
 }

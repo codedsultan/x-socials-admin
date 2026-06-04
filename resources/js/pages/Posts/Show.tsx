@@ -2,11 +2,13 @@ import { Link, router } from '@inertiajs/react';
 import {
     ArrowLeft,
     Heart,
+    Loader2,
     MessageCircle,
     Trash2,
     ShieldAlert,
     Zap,
 } from 'lucide-react';
+import { useState } from 'react';
 import { Badge, EmptyState } from '@/components/ui';
 import AdminLayout from '@/layouts/admin-layout';
 import { timeAgo, formatDate } from '@/lib/utils';
@@ -19,12 +21,21 @@ interface Props {
 }
 
 export default function PostShow({ post, comments, meta }: Props) {
+    const [deletingPost, setDeletingPost] = useState(false);
+    const [deletingCommentId, setDeletingCommentId] = useState<string | null>(
+        null,
+    );
+    const [scanning, setScanning] = useState(false);
+
     function deletePost() {
         if (!confirm('Delete this post?')) {
             return;
         }
 
-        router.delete(`/posts/${post.id}`);
+        setDeletingPost(true);
+        router.delete(`/posts/${post.id}`, {
+            onFinish: () => setDeletingPost(false),
+        });
     }
 
     function deleteComment(id: string) {
@@ -32,7 +43,11 @@ export default function PostShow({ post, comments, meta }: Props) {
             return;
         }
 
-        router.delete(`/moderation/comments/${id}`, { preserveScroll: true });
+        setDeletingCommentId(id);
+        router.delete(`/moderation/comments/${id}`, {
+            preserveScroll: true,
+            onFinish: () => setDeletingCommentId(null),
+        });
     }
 
     return (
@@ -47,25 +62,45 @@ export default function PostShow({ post, comments, meta }: Props) {
                     </Link>
                     <div className="flex gap-2">
                         <button
-                            onClick={() =>
-                                router.post(`/scan/trigger/${post.id}`)
-                            }
-                            className="bg-accent-500/15 border-accent-500/25 text-accent-400 hover:bg-accent-500/25 flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs transition-colors"
+                            onClick={() => {
+                                setScanning(true);
+                                router.post(
+                                    `/scan/trigger/${post.id}`,
+                                    {},
+                                    {
+                                        preserveScroll: true,
+                                        onFinish: () => setScanning(false),
+                                    },
+                                );
+                            }}
+                            disabled={scanning}
+                            className="flex items-center gap-1.5 rounded-xl border border-accent-500/25 bg-accent-500/15 px-3 py-1.5 text-xs text-accent-400 transition-colors hover:bg-accent-500/25 disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                            <Zap className="h-3.5 w-3.5" /> Scan comments
+                            {scanning ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                                <Zap className="h-3.5 w-3.5" />
+                            )}
+                            {scanning ? 'Scanning…' : 'Scan comments'}
                         </button>
                         <Link
                             href={`/moderation?postId=${post.id}`}
-                            className="bg-warning/10 border-warning/20 text-warning hover:bg-warning/20 flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs transition-colors"
+                            className="flex items-center gap-1.5 rounded-xl border border-warning/20 bg-warning/10 px-3 py-1.5 text-xs text-warning transition-colors hover:bg-warning/20"
                         >
                             <ShieldAlert className="h-3.5 w-3.5" /> On-demand
                             analysis
                         </Link>
                         <button
                             onClick={deletePost}
-                            className="bg-danger/10 border-danger/20 text-danger hover:bg-danger/20 flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs transition-colors"
+                            disabled={deletingPost}
+                            className="flex items-center gap-1.5 rounded-xl border border-danger/20 bg-danger/10 px-3 py-1.5 text-xs text-danger transition-colors hover:bg-danger/20 disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                            <Trash2 className="h-3.5 w-3.5" /> Delete post
+                            {deletingPost ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                                <Trash2 className="h-3.5 w-3.5" />
+                            )}
+                            {deletingPost ? 'Deleting…' : 'Delete post'}
                         </button>
                     </div>
                 </div>
@@ -106,7 +141,7 @@ export default function PostShow({ post, comments, meta }: Props) {
 
                 {/* Comments */}
                 <div>
-                    <h3 className="font-display mb-4 flex items-center gap-2 font-semibold text-white/80">
+                    <h3 className="mb-4 flex items-center gap-2 font-display font-semibold text-white/80">
                         <MessageCircle className="h-4 w-4 text-white/30" />
                         Comments
                         <span className="font-mono text-xs text-white/20">
@@ -151,9 +186,16 @@ export default function PostShow({ post, comments, meta }: Props) {
                                         onClick={() =>
                                             deleteComment(comment.id)
                                         }
-                                        className="hover:bg-danger/15 hover:text-danger shrink-0 rounded-lg p-1.5 text-white/25 opacity-0 transition-all group-hover:opacity-100"
+                                        disabled={
+                                            deletingCommentId === comment.id
+                                        }
+                                        className="shrink-0 rounded-lg p-1.5 text-white/25 opacity-0 transition-all group-hover:opacity-100 hover:bg-danger/15 hover:text-danger disabled:cursor-not-allowed disabled:opacity-50"
                                     >
-                                        <Trash2 className="h-3.5 w-3.5" />
+                                        {deletingCommentId === comment.id ? (
+                                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                        ) : (
+                                            <Trash2 className="h-3.5 w-3.5" />
+                                        )}
                                     </button>
                                 </div>
                             ))}

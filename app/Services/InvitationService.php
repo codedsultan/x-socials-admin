@@ -21,14 +21,14 @@ class InvitationService
             'name' => $name,
             'email' => $email,
             'message' => $message,
-            'status' => InvitationRequestStatus::Pending,
+            'status' => InvitationRequestStatus::Pending->value,
         ]);
     }
 
     public function approveRequest(InvitationRequest $invitationRequest, User $admin): Invitation
     {
         $invitationRequest->update([
-            'status' => InvitationRequestStatus::Approved,
+            'status' => InvitationRequestStatus::Approved->value,
             'reviewed_by' => $admin->id,
             'reviewed_at' => now(),
         ]);
@@ -44,7 +44,7 @@ class InvitationService
     public function rejectRequest(InvitationRequest $invitationRequest, User $admin): void
     {
         $invitationRequest->update([
-            'status' => InvitationRequestStatus::Rejected,
+            'status' => InvitationRequestStatus::Rejected->value,
             'reviewed_by' => $admin->id,
             'reviewed_at' => now(),
         ]);

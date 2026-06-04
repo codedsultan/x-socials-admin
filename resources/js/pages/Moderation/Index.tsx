@@ -5,6 +5,7 @@ import {
     Trash2,
     CheckCircle,
     AlertTriangle,
+    Loader2,
     Zap,
     X,
     FileText,
@@ -91,6 +92,7 @@ function AnalysisModal({
     authorId,
     createdAt,
     preloaded,
+    isDeleting = false,
     onClose,
     onDelete,
 }: {
@@ -103,10 +105,10 @@ function AnalysisModal({
     // null  → content not yet scanned; trigger a fresh analysis immediately.
     // value → show stored result; offer Re-analyse button for upgrade.
     preloaded?: ModerationResult | null;
+    isDeleting?: boolean;
     onClose: () => void;
     onDelete: (id: string, type: 'post' | 'comment') => void;
 }) {
-    // Start analysing immediately if there's no stored result.
     const [analysing, setAnalysing] = useState(preloaded == null);
     const [analysis, setAnalysis] = useState<ModerationResult | null>(
         preloaded ?? null,
@@ -393,14 +395,18 @@ function AnalysisModal({
                         {label.toLowerCase()}
                     </button>
                     <button
-                        onClick={() => {
-                            onDelete(contentId, contentType);
-                            onClose();
-                        }}
-                        className="flex items-center gap-1.5 rounded-xl border border-danger/25 bg-danger/15 px-4 py-2 text-sm text-danger transition-colors hover:bg-danger/25"
+                        onClick={() => onDelete(contentId, contentType)}
+                        disabled={isDeleting}
+                        className="flex items-center gap-1.5 rounded-xl border border-danger/25 bg-danger/15 px-4 py-2 text-sm text-danger transition-colors hover:bg-danger/25 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                        <Trash2 className="h-4 w-4" /> Remove{' '}
-                        {label.toLowerCase()}
+                        {isDeleting ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Trash2 className="h-4 w-4" />
+                        )}
+                        {isDeleting
+                            ? 'Removing…'
+                            : `Remove ${label.toLowerCase()}`}
                     </button>
                 </div>
             </div>
@@ -424,6 +430,7 @@ export default function ModerationIndex({
         authorId: string;
         createdAt: string;
     } | null>(null);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
 
     function loadPost(e: React.FormEvent) {
         e.preventDefault();
@@ -439,9 +446,11 @@ export default function ModerationIndex({
             type === 'post'
                 ? `/moderation/posts/${id}`
                 : `/moderation/comments/${id}`;
+        setDeletingId(id);
         router.delete(path, {
             preserveScroll: true,
             onSuccess: () => setSelected(null),
+            onFinish: () => setDeletingId(null),
         });
     }
 
@@ -747,9 +756,8 @@ export default function ModerationIndex({
                     content={selected.content}
                     authorId={selected.authorId}
                     createdAt={selected.createdAt}
-                    // [Fix 5] Pass null explicitly for unscanned items so the modal
-                    // triggers a live analysis immediately on open.
                     preloaded={analysis[selected.id] ?? null}
+                    isDeleting={deletingId === selected.id}
                     onClose={() => setSelected(null)}
                     onDelete={deleteContent}
                 />

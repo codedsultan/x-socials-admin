@@ -1,4 +1,3 @@
-import { usePage } from '@inertiajs/react';
 import {
     Bell,
     ClipboardList,
@@ -26,7 +25,7 @@ import {
     SidebarMenuItem,
     SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { cn } from '@/lib/utils';
+import { useFlashToast } from '@/hooks/use-flash-toast';
 import { dashboard } from '@/routes';
 import adminInvitations from '@/routes/admin/invitations';
 import adminTeam from '@/routes/admin/team';
@@ -36,7 +35,7 @@ import posts from '@/routes/posts';
 import queue from '@/routes/queue';
 import scans from '@/routes/scans';
 import users from '@/routes/users';
-import type { NavItem, PageProps } from '@/types';
+import type { NavItem } from '@/types';
 
 const adminNavItems: NavItem[] = [
     { title: 'Dashboard', href: dashboard(), icon: LayoutDashboard },
@@ -56,8 +55,7 @@ interface Props {
 }
 
 export default function AdminLayout({ children, title }: Props) {
-    const { props } = usePage<PageProps>();
-    const { flash } = props;
+    useFlashToast();
 
     return (
         <AppShell variant="sidebar">
@@ -95,19 +93,6 @@ export default function AdminLayout({ children, title }: Props) {
                         <Bell className="h-4 w-4" />
                     </button>
                 </header>
-
-                {(flash.success || flash.error) && (
-                    <div
-                        className={cn(
-                            'mx-6 mt-4 rounded-xl border px-4 py-3 text-sm',
-                            flash.success
-                                ? 'border-green-500/20 bg-green-500/10 text-green-600 dark:text-green-400'
-                                : 'border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400',
-                        )}
-                    >
-                        {flash.success ?? flash.error}
-                    </div>
-                )}
 
                 <main className="flex-1 px-6 py-6">{children}</main>
             </AppContent>

@@ -1,6 +1,7 @@
 import { Link, router, useForm } from '@inertiajs/react';
 import {
     Clock,
+    Loader2,
     Mail,
     MailCheck,
     Send,
@@ -82,6 +83,7 @@ export default function InvitationsIndex({
     invitationRequestVisible,
 }: Props) {
     const [open, setOpen] = useState(false);
+    const [togglingVisibility, setTogglingVisibility] = useState(false);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
@@ -89,10 +91,14 @@ export default function InvitationsIndex({
     });
 
     function toggleVisibility() {
+        setTogglingVisibility(true);
         router.put(
             adminSettings.invitationVisibility(),
             { invitation_request_visible: !invitationRequestVisible },
-            { preserveScroll: true },
+            {
+                preserveScroll: true,
+                onFinish: () => setTogglingVisibility(false),
+            },
         );
     }
 
@@ -126,10 +132,16 @@ export default function InvitationsIndex({
                         {/* Toggle request form visibility */}
                         <button
                             onClick={toggleVisibility}
-                            className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors hover:bg-accent"
+                            disabled={togglingVisibility}
+                            className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
                             title="Toggle public request form visibility"
                         >
-                            {invitationRequestVisible ? (
+                            {togglingVisibility ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <span>Updating…</span>
+                                </>
+                            ) : invitationRequestVisible ? (
                                 <>
                                     <ToggleRight className="h-4 w-4 text-emerald-500" />
                                     <span>
@@ -262,8 +274,8 @@ export default function InvitationsIndex({
                         setOpen(next);
 
                         if (!next) {
-reset();
-}
+                            reset();
+                        }
                     }
                 }}
             >

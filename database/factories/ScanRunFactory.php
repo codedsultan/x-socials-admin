@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\ScanRunMode;
 use App\Enums\ScanRunStatus;
 use App\Models\ScanRun;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -19,6 +20,7 @@ class ScanRunFactory extends Factory
     {
         return [
             'status' => ScanRunStatus::Completed,
+            'mode' => ScanRunMode::Reconciliation->value,
             'posts_scanned' => $this->faker->numberBetween(0, 100),
             'comments_scanned' => $this->faker->numberBetween(0, 500),
             'flagged' => $this->faker->numberBetween(0, 10),
